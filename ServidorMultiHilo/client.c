@@ -56,11 +56,21 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    in_addr_t ip = inet_addr(char_ip);
+   
+    struct in_addr ipv4Addr;
+
+    if (inet_pton(AF_INET, char_ip, &ipv4Addr) == 1) {
+        printf("Dirección IPv4 configurada: %s\n", inet_ntoa(ipv4Addr));
+    } else {
+        perror("Error al configurar la dirección IPv4");
+        return 1;
+    }
+
+    //in_addr_t ip = inet_addr(ipv4Addr.s_addr);
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(ip);
-    server_addr.sin_port = htons(PORT); 
+    server_addr.sin_addr.s_addr = htonl(ipv4Addr.s_addr);
+    server_addr.sin_port = htons(port); 
     
 
     int addrlen = sizeof(server_addr);
