@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 {
 	char *endptr;
 	int * p = malloc(sizeof(int));
-    long port = strtol(argv[1], &endptr, 10);
+  long port = strtol(argv[1], &endptr, 10);
 
     if (*endptr != '\0' && *endptr != '\n') {
         printf("No se pudo convertir a entero.\n");
@@ -94,6 +94,7 @@ main(int argc, char *argv[])
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);	//Meter ips si no no funciona desde otra maquina 
 	server_addr.sin_port = htons(port);
+
 
 	int addrlen = sizeof(server_addr);
 

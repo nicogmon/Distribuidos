@@ -69,7 +69,7 @@ main(int argc, char *argv[])
     //in_addr_t ip = inet_addr(ipv4Addr.s_addr);
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(ipv4Addr.s_addr);
+    server_addr.sin_addr.s_addr = ipv4Addr.s_addr;
     server_addr.sin_port = htons(port); 
     
 
@@ -91,21 +91,7 @@ main(int argc, char *argv[])
     }
     printf(">%s\n", buffer);
             
-    /*fd_set readmask;
-    struct timeval timeout;
-    FD_ZERO(&readmask); // Reset la mascara
-    FD_SET(tcp_socket, &readmask); // Asignamos el nuevo descriptor
-    FD_SET(STDIN_FILENO, &readmask); // Entrada
-    timeout.tv_sec=1; timeout.tv_usec=500000;
-
-    if (select(tcp_socket+1, &readmask, NULL, NULL, &timeout)==-1)
-        exit(-1);
     
-    memset(buffer, 0, sizeof(buffer));
-    if (FD_ISSET(tcp_socket, &readmask)){
-        recv(tcp_socket, buffer, 1024, 0);
-        printf("+++%s\n", buffer);      
-    }*/
     
     printf(">");
     signal(SIGINT, handler);
