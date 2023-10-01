@@ -168,7 +168,7 @@ main(int argc, char *argv[])
 					perror("Error al esperar el hilo");
 					continue;
 				}
-				
+			
 			}
 			
 			num_threads = 0;
@@ -181,7 +181,7 @@ main(int argc, char *argv[])
 	printf("Waiting for threads to finish...\n");
 	
 	for (int i = 0; i < num_threads; i++) {
-		printf("Waiting for thread %d...\n", i);
+		//printf("Waiting for thread %d...\n", i);
 		if (pthread_join(threads[i], NULL) != 0) {
 			perror("Error al esperar el hilo");
 			return -1;

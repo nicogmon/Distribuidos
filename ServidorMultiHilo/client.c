@@ -90,7 +90,7 @@ main(int argc, char *argv[])
         close(tcp_socket);
         exit(EXIT_SUCCESS);
     }
-    printf("Exiting...\n");
+    
     free(msg);
     close(tcp_socket);
     return  0;
