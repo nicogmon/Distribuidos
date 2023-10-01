@@ -1,14 +1,17 @@
 CC=gcc
-CFLAGS=-I -Wall -Wshadow -lpthread
+CFLAGS=-I -Wall -Wshadow -lpthread.
 DEPS = 
 
 %.o: %.c $(DEPS)
-	$(CC) -c -g -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-server: server.o
-	gcc -o server server.o	
-client: client.o
-	gcc -o client client.o
+all: server client
+
+server: server.c 
+	gcc -g -Wall -o server server.c
+
+client: client.c 
+	gcc -g -Wall -o client client.c
 	
 clean:
 	rm -f *.o server client

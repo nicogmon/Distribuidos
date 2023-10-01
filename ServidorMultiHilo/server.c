@@ -36,7 +36,6 @@ handler(int number)
 
 typedef struct {
     int client_socket;
-    // Otros argumentos si es necesario.
 } ThreadArgs;
 
 
@@ -46,8 +45,6 @@ handle_client(void *arg)
 	ThreadArgs *threadArgs = (ThreadArgs *)arg;
     int client_socket = threadArgs->client_socket;
 
-	//int client_socket = *(int *)arg;
-	//printf("Client connected with socket %d\n", client_socket);
 	char buffer[1024] = { 0 };
 	char *path = (char *)malloc(sizeof(char) * 1024);
 
@@ -55,7 +52,7 @@ handle_client(void *arg)
 
 	memset(buffer, 0, sizeof(buffer));
 	if (recv(client_socket, buffer, 1024, 0) > 0) {	//comprobar si el error es diferente de nd que leer
-		//printf(">%s\n", buffer);
+		printf(">%s\n", buffer);
 	}
 
 	srand(time(NULL));
@@ -66,7 +63,7 @@ handle_client(void *arg)
     // Ajusta el número al rango entre 0.5 y 2.0
     double numeroAleatorio = 0.5 + randomDouble * (2.0 - 0.5);
 
-	sleep(10);
+	sleep(numeroAleatorio);
 	if (send(client_socket, path, strlen(path), 0) < 0) {
 		perror("send");
 	}
@@ -76,10 +73,6 @@ handle_client(void *arg)
 	free(path);
 	return NULL;
 }
-
-
-
-
 
 int
 main(int argc, char *argv[])
@@ -94,7 +87,7 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    printf("El valor entero es: %ld\n", port);
+    //printf("El valor entero es: %ld\n", port);
 
 	setbuf(stdout, NULL);
 
@@ -107,9 +100,6 @@ main(int argc, char *argv[])
 
 	int addrlen = sizeof(server_addr);
 
-	char buffer[1024] = { 0 };
-	char *hello = "Hello client";
-	
 
 	signal(SIGINT, handler);
 
@@ -147,18 +137,18 @@ main(int argc, char *argv[])
 		
 		if (num_threads < 100) {
 			client_socket = malloc(sizeof(int));
-			//printf("Waiting for new connection...\n");
+			
 		
 			if ((*client_socket =
 		     	accept(tcp_socket, (struct sockaddr *)&server_addr, (socklen_t *) & addrlen)) < 0) {
 				perror("accept");
 				exit(EXIT_FAILURE);//esto no se si esta bien
 			}
-			//printf("New connection accepted...\n");
+			
 			
 			ThreadArgs *threadArgs = (ThreadArgs *)malloc(sizeof(ThreadArgs));
 		
-			//printf("client socket %d\n", *client_socket);
+			
 			
 			threadArgs->client_socket = *client_socket;
 			if (pthread_create(&threads[num_threads], NULL, handle_client, (void*) threadArgs) != 0) {

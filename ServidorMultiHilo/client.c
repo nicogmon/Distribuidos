@@ -30,13 +30,9 @@ main(int argc, char *argv[])
 {
 
     char *endptr;
-	int * p = malloc(sizeof(int));
     char *id = argv[1];
-    
     char *char_ip = argv[2];
-
     long port = strtol(argv[3], &endptr, 10);
-
 
     if (*endptr != '\0' && *endptr != '\n') {
         printf("No se pudo convertir a entero.\n");
@@ -45,7 +41,6 @@ main(int argc, char *argv[])
 
     setbuf(stdout, NULL);
     
-
     char buffer[1024] = { 0 };
     char *msg = (char *)malloc(sizeof(char) * 1024);
     sprintf(msg,"Hello server! From client: %s\n", id);
@@ -56,7 +51,6 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-   
     struct in_addr ipv4Addr;
 
     if (inet_pton(AF_INET, char_ip, &ipv4Addr) == 1) {
@@ -65,14 +59,11 @@ main(int argc, char *argv[])
         perror("Error al configurar la dirección IPv4");
         return 1;
     }
-
-    //in_addr_t ip = inet_addr(ipv4Addr.s_addr);
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = ipv4Addr.s_addr;
     server_addr.sin_port = htons(port); 
     
-
     int addrlen = sizeof(server_addr);
     
     if(connect(tcp_socket, (struct sockaddr *) &server_addr, addrlen) < 0) {
@@ -92,16 +83,17 @@ main(int argc, char *argv[])
     }
     printf(">%s\n", buffer);
             
-    
-    
-    printf(">");
     signal(SIGINT, handler);
     if (exit_flag == 1){
         printf("Exiting...\n");
+        free(msg);
         close(tcp_socket);
         exit(EXIT_SUCCESS);
     }
-    
+    printf("Exiting...\n");
+    free(msg);
+    close(tcp_socket);
+    return  0;
 }    
         
     
