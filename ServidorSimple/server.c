@@ -9,22 +9,25 @@
 
 #define PORT 8080
 
+int sig_c = 0;
+
 void
-handler(int number,int * sckfd)
+handler(int number)
  {
 switch ( number ) {
-case SIGINT:
-    fprintf(stderr, "SIGINT received!\n" );
-    break;
-case SIGTERM:
-    fprintf(stderr, "SIGTERM received! \n" );
-    break;
-
-}
+    case SIGINT:
+        fprintf(stderr, "SIGINT received!\n" );
+        sig_c = 1;
+        break;
+    case SIGTERM:
+        fprintf(stderr, "SIGTERM received! \n" );
+        break;
+    }
 }
 int
 main(int argc, char *argv[])
-{
+{   
+    signal(SIGINT, handler);
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -82,7 +85,13 @@ main(int argc, char *argv[])
             }
             printf("+++%s\n", buffer);
             printf(">");
-            signal(SIGINT, handler);
+            if (sig_c == 1) {
+                printf("Cerrando servidor...\n");
+                close(tcp_socket);
+                free(path);
+                exit(EXIT_SUCCESS);
+            }
+           
             
         }
     }

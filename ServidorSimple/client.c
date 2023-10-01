@@ -5,16 +5,47 @@
 #include <string.h>
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
+#include <signal.h>
+#include <arpa/inet.h>
+
 
 #define PORT 8080
 
+int sig_c = 0;
+
+void
+handler(int number)
+ {
+switch ( number ) {
+    case SIGINT:
+        fprintf(stderr, "SIGINT received!\n" );
+        sig_c = 1;
+        break;
+    case SIGTERM:
+        fprintf(stderr, "SIGTERM received! \n" );
+        break;
+    }
+}
 
 int
 main(int argc, char *argv[])
 {
+    signal(SIGINT, handler);
+    char ip[INET_ADDRSTRLEN];
+
+    strcpy(ip, "192.168.1.31");
+
+    struct in_addr ipv4Addr;
+
+    if (inet_pton(AF_INET, ip, &ipv4Addr) == 1) {
+        printf("Dirección IPv4 configurada: %s\n", inet_ntoa(ipv4Addr));
+    } else {
+        perror("Error al configurar la dirección IPv4");
+        return 1;
+    }
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_addr.s_addr = ipv4Addr.s_addr;
     server_addr.sin_port = htons(PORT); 
 
     int addrlen = sizeof(server_addr);
@@ -49,6 +80,12 @@ main(int argc, char *argv[])
             printf("+++%s\n", buffer);
             printf(">");
 
+            if (sig_c == 1) {
+                printf("Cerrando servidor...\n");
+                close(tcp_socket);
+                free(path);
+                exit(EXIT_SUCCESS);
+            }
     
         }
     
