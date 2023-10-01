@@ -85,6 +85,7 @@ main(int argc, char *argv[])
     exit(EXIT_FAILURE);
     }
 
+    memset(buffer, 0, sizeof(buffer));
     if (recv(tcp_socket, buffer, 1024, 0) < 0) {
                 perror("recv");
                 exit(EXIT_FAILURE);

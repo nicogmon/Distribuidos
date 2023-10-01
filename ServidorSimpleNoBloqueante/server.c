@@ -29,7 +29,8 @@ int
 main(int argc, char *argv[])
 {   
     setbuf(stdout, NULL);  
-  
+    signal(SIGINT, handler);
+
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY); //Meter ips si no no funciona desde otra maquina 
@@ -88,18 +89,15 @@ main(int argc, char *argv[])
         }
         
         printf(">");
-        signal(SIGINT, handler);
+        
         if (exit_flag == 1){
             printf("Exiting...\n");
+            free(path);
             close(tcp_socket);
             exit(EXIT_SUCCESS);
         }
         
     }
 
-
-    
-
-    
     return 0;
 }

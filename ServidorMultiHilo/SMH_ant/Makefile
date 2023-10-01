@@ -3,7 +3,7 @@ CFLAGS=-I.
 DEPS = 
 
 %.o: %.c $(DEPS)
-	$(CC) -c -g -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 server: server.o
 	gcc -o server server.o	

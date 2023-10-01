@@ -7,6 +7,7 @@
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
 #include <netinet/in.h>
+
 #include <arpa/inet.h>
 #include <signal.h>
 
@@ -30,23 +31,35 @@ int
 main(int argc, char *argv[])
 {
     setbuf(stdout, NULL);
-    
+    signal(SIGINT, handler);
 
     char buffer[1024] = { 0 };
     char* hello = "Hello server";
     char *path = (char *)malloc(sizeof(char) * 1024);
+    char ip[INET_ADDRSTRLEN];
 
+    strcpy(ip, "192.168.1.31");
+
+    struct in_addr ipv4Addr;
+
+
+    if (inet_pton(AF_INET, ip, &ipv4Addr) == 1) {
+        printf("Dirección IPv4 configurada: %s\n", inet_ntoa(ipv4Addr));
+    } else {
+        perror("Error al configurar la dirección IPv4");
+        return 1;
+    }
+    
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = ipv4Addr.s_addr;
+    server_addr.sin_port = htons(PORT);
     int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (tcp_socket < 0) {
         perror("socket");
         exit(EXIT_FAILURE);
     }
-
-    in_addr_t ip = inet_addr("10.1.146.127");
-    struct sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(ip);
-    server_addr.sin_port = htons(PORT); 
+     
 
     int addrlen = sizeof(server_addr);
     
@@ -55,9 +68,6 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-
-   
-    
 
     printf(">");
     while (fgets(path, 1024, stdin) != NULL) {
@@ -84,9 +94,10 @@ main(int argc, char *argv[])
             }
             
             printf(">");
-            signal(SIGINT, handler);
+            
             if (exit_flag == 1){
                 printf("Exiting...\n");
+                free(path);
                 close(tcp_socket);
                 exit(EXIT_SUCCESS);
             }

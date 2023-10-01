@@ -75,22 +75,26 @@ main(int argc, char *argv[])
         printf("+++%s\n", buffer);
         printf(">");
         while (fgets(path, 100, stdin) != NULL) {
+            if (sig_c == 1) {
+                printf("Cerrando cliente...\n");
+                close(tcp_socket);
+                free(path);
+                exit(EXIT_SUCCESS);
+            }
             if (send(new_socket, path, strlen(path), 0) < 0) {
                 perror("send");
                 exit(EXIT_FAILURE);
             }
+
+            memset(buffer, 0, sizeof(buffer));
             if (recv(new_socket, buffer, 1024, 0) < 0) {
                 perror("recv");
                 exit(EXIT_FAILURE);
             }
             printf("+++%s\n", buffer);
             printf(">");
-            if (sig_c == 1) {
-                printf("Cerrando servidor...\n");
-                close(tcp_socket);
-                free(path);
-                exit(EXIT_SUCCESS);
-            }
+
+            
            
             
         }
