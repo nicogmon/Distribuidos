@@ -15,19 +15,20 @@ main(int argc, char *argv[])
     init(1, NULL, port, my_id);
     fprintf(stderr, "Server initialized\n");
 
-    //message * msg1 = receive_message(1);
+    fprintf(stderr, "P2 esta listo para apagarse clock %d\n", get_clock_lamport());
     while (get_clock_lamport() < 3)
     {
         continue; 
     }
     
     shutdown_now(1);
-    
+    fprintf(stderr, "shutdown now1 enviado clock actual %d\n", get_clock_lamport());
     while (get_clock_lamport() < 7)
     {
      continue;   
     }
     shutdown_now(3);
+    fprintf(stderr, "shutdown now3 enviado clock actual %d\n", get_clock_lamport());
 
     while (get_clock_lamport() < 11)
     {

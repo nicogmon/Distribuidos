@@ -21,13 +21,16 @@ main(int argc, char *argv[])
     init(2, char_ip, port, id);
 
     ready_to_shutdown();
+    printf("P1 esta listo para apagarse clock %d\n", get_clock_lamport());
 
     while (get_clock_lamport() < 1)
     {
         continue;   
     }
+    fprintf(stderr, "clock a 1 en P1");
     receive_messages();
-    while (get_clock_lamport() < 9)
+    fprintf(stderr, "clock en P1 %d\n", get_clock_lamport());
+    while (get_clock_lamport() < 5)
     {
         continue;   
     }

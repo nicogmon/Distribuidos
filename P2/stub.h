@@ -46,7 +46,7 @@ int init(int flag, char * ip, long port, char * id);
 
 int  init_Server(long port);
 
-void *  accept_connections(void * args);
+void *  accept_connections(int tcp_socket, struct sockaddr_in * server_addr, int * addrlen);
 
 int init_Client(char * ip, long port);
 
@@ -54,7 +54,7 @@ int send_message(message * msg, int arg_socket);
 
 message * receive_messages();
 void * client_receive(void *arg);
-void * server_receive(int client);
+void * server_receive(void *arg);
 // update Lamport clock value
 void update_clock(message* msg_in, message* msg_out);
 
@@ -66,3 +66,5 @@ int ready_to_shutdown();
 int shutdown_now(int dest);
 
 int shutdown_ack();
+
+int get_max(int a, int b);
