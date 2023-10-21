@@ -34,26 +34,26 @@ struct communication_info {
 typedef struct communication_info communication_info;
 
 struct threadArgs {
-    int tcp_socket;
+    
     struct sockaddr_in * server_addr;
     int * addrlen;
-    int id;
 };
 typedef struct threadArgs threadArgs;
 
 // initialize communication channels
-int init(int flag, char * ip, long port, char * id);
+int init(int flag, char * ip, long port, const char * id);
 
 int  init_Server(long port);
 
-void *  accept_connections(int tcp_socket, struct sockaddr_in * server_addr, int * addrlen);
+void *  accept_connections(void * args);
 
 int init_Client(char * ip, long port);
 
 int send_message(message * msg, int arg_socket);
 
-message * receive_messages();
-void * client_receive(void *arg);
+int client_receive();
+void * receive_messages();
+
 void * server_receive(void *arg);
 // update Lamport clock value
 void update_clock(message* msg_in, message* msg_out);
@@ -68,3 +68,5 @@ int shutdown_now(int dest);
 int shutdown_ack();
 
 int get_max(int a, int b);
+
+char * get_action(int action);
