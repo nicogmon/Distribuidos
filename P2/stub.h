@@ -51,7 +51,7 @@ int init_Client(char * ip, long port);
 
 int send_message(message * msg, int arg_socket);
 
-int client_receive();
+int waiting_order();
 void * receive_messages();
 
 void * server_receive(void *arg);
@@ -59,7 +59,7 @@ void * server_receive(void *arg);
 void update_clock(message* msg_in, message* msg_out);
 
 // get current Lamport clock value
-int get_clock_lamport();
+unsigned int get_clock_lamport();
 
 int ready_to_shutdown();
 
@@ -67,6 +67,6 @@ int shutdown_now(int dest);
 
 int shutdown_ack();
 
-int get_max(int a, int b);
+unsigned int get_max(unsigned int a, unsigned int b);
 
 char * get_action(int action);

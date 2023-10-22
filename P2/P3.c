@@ -38,7 +38,7 @@ main(int argc, char *argv[])
         continue;   
     }
     
-    receive_messages();
+    waiting_order();
     
     while (get_clock_lamport() < 5)
     {

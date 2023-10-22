@@ -1,10 +1,11 @@
 #include "stub.h"
 
 #define ID "P1"
+
 int
 main(int argc, char *argv[])
 {
-
+                                                                                                             
     char *endptr;
     argc--;
     argv++;
@@ -33,12 +34,11 @@ main(int argc, char *argv[])
     
     while (get_clock_lamport() < 1)
     {
-        
         usleep(100);
         continue;   
     }
    
-    client_receive();
+    waiting_order();
     
     while (get_clock_lamport() < 5)
     {

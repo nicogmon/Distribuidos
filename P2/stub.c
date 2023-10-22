@@ -21,7 +21,6 @@
 unsigned int clock_lamport = 0;
 
 int tcp_socket;
-
 int tcp_socket1;
 int tcp_socket3;
 
@@ -31,7 +30,7 @@ char Pid [5];
 int i = 0;
 
 pthread_t recv_thread;
-//no comparten memoria cada uno tiene su reloj no p1 p2 p3 sino cada uno tiene su reloj
+
 int init(int flag, char * ip, long port, const char * id){
     strcpy(Pid, id);
     //printf("Pid %s\n", Pid);
@@ -89,7 +88,6 @@ int init_Server(long port){
 
     
     pthread_create(&thread_id, NULL, accept_connections, (void *) args);
-    //accept_connections( &server_addr, &addrlen);
     
     return 0;
     }
@@ -104,7 +102,8 @@ void * accept_connections(void * args){
     int * addrlen = arguments->addrlen;
         
     for (int i = 0; i < MAX_CLIENTS; i++){
-        if ((tcp_sockets[i] = accept(tcp_socket, (struct sockaddr *)server_addr, (socklen_t *)addrlen)) < 0) {
+        if ((tcp_sockets[i] = accept(tcp_socket, (struct sockaddr *)server_addr,
+         (socklen_t *)addrlen)) < 0) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
@@ -129,9 +128,10 @@ void * server_receive(void *arg)
 
     while(flag){
         message * msg = malloc(sizeof(message));
-        if (recv(socket_local, msg, sizeof(message), 0) > 0) {	//comprobar si el error es diferente de nd que leer
+        if (recv(socket_local, msg, sizeof(message), 0) > 0) {	
              update_clock(msg, NULL); 
-		    fprintf(stderr,">%s, %u, RECV (%s), %s\n",Pid, clock_lamport, msg->origin, get_action(msg->action));
+		    fprintf(stderr,">%s, %u, RECV (%s), %s\n",Pid, clock_lamport, 
+                                        msg->origin, get_action(msg->action));
 	    }
         if (msg->action == SHUTDOWN_ACK){
             flag = 0;
@@ -186,7 +186,7 @@ int init_Client(char * ip, long port){
     return tcp_socket;
 }
 
-int client_receive()
+int waiting_order()
 {
     pthread_t thread_id;
     pthread_create(&thread_id, NULL, receive_messages,NULL);
@@ -197,8 +197,9 @@ int client_receive()
 void * receive_messages(){
     message * msg = malloc(sizeof(message));
 	
-	if (recv(tcp_socket, msg, sizeof(message), 0) > 0) {	//comprobar si el error es diferente de nd que leer
-		printf(">%s, %u, RECV (%s), %s\n",Pid, clock_lamport, msg->origin, get_action(msg->action));
+	if (recv(tcp_socket, msg, sizeof(message), 0) > 0) {
+        printf(">%s, %u, RECV (%s), %s\n",Pid, clock_lamport, msg->origin, 
+                                                    get_action(msg->action));
 	}
     update_clock(msg, NULL);
 
@@ -273,16 +274,15 @@ void update_clock(message* msg_in, message* msg_out){
     else {
         clock_lamport = get_max(clock_lamport, msg_in->clock_lamport) + 1 ;
     }
-    return;
 }
 
-int get_clock_lamport(){
+unsigned int get_clock_lamport(){
     return clock_lamport;
 }
 // get current Lamport clock value
 
 
-int get_max(int a, int b){
+unsigned int get_max(unsigned int a, unsigned int b){
     if (a > b){
         return a;
     }
