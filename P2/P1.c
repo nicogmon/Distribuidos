@@ -21,20 +21,18 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    
-
     if (*endptr != '\0' && *endptr != '\n') {
         printf("Incorrect format port.\n");
         return 1;
     }
 
-    init(2, char_ip, port, ID);
+    init(char_ip, port, ID);
 
     int result = ready_to_shutdown();
     
     while (get_clock_lamport() < 1)
     {
-        usleep(100);
+        usleep(500);
         continue;   
     }
    
@@ -42,10 +40,11 @@ main(int argc, char *argv[])
     
     while (get_clock_lamport() < 5)
     {
-        usleep(100);
+        usleep(500);
         continue;   
     }
     result = shutdown_ack();
+    shutdown_machine();
 
     exit(result);
 

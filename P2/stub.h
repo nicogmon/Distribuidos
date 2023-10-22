@@ -41,7 +41,7 @@ struct threadArgs {
 typedef struct threadArgs threadArgs;
 
 // initialize communication channels
-int init(int flag, char * ip, long port, const char * id);
+int init(char * ip, long port, const char * id);
 
 int  init_Server(long port);
 
@@ -70,3 +70,5 @@ int shutdown_ack();
 unsigned int get_max(unsigned int a, unsigned int b);
 
 char * get_action(int action);
+
+int shutdown_machine();

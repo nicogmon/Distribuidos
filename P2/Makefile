@@ -28,4 +28,4 @@ $(LIBRARY): stub.o
 	ar rcs $@ stub.o
 
 clean:
-	rm -f $(OBJS) P1 P2 P3 $(LIBRARY)
+	rm -f $(OBJS) P1 P2 P3 $(LIBRARY) P1.o P2.o P3.o

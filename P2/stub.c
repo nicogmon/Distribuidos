@@ -30,17 +30,18 @@ int tcp_socket1;
 int tcp_socket3;
 
 int tcp_sockets [MAX_CLIENTS];
-
+int client_counter = 0;
 char Pid [PID_LENGTH];
-int i = 0;
 
-pthread_t recv_thread;
 
-int init(int flag, char * ip, long port, const char * id) {
+pthread_t threads_not_collected [MAX_CLIENTS];
+int nthreads_not_collected = 0;
+
+int init(char * ip, long port, const char * id) {
     strcpy(Pid, id);
-    if (flag == 1){
+    if (strcmp(Pid, "P2") == 0) {
         init_Server(port);
-    } else if (flag == 2){
+    } else if (strcmp(Pid, "P1") == 0 || strcmp(Pid, "P3") == 0){
         init_Client(ip, port);
     }
     return 0;
@@ -86,9 +87,10 @@ int init_Server(long port) {
     threadArgs  * args = (threadArgs *) malloc(sizeof(threadArgs));
     args->server_addr = &server_addr;
     args->addrlen = &addrlen;
-    
+    //creamos un hlo que se encarge de aceptar las conexiones para poder volver al programa principal
     pthread_create(&thread_id, NULL, accept_connections, (void *) args);
-    
+    threads_not_collected[nthreads_not_collected] = thread_id;
+    nthreads_not_collected++;
     return 0;
     }
 
@@ -107,6 +109,8 @@ void * accept_connections(void * args) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
+        //creamos un hilo por cada conexion que se quedar escchando indefinidadmente
+        //sin interrumpir la ejecucion del hilo principal 
         pthread_create(&thread_ids[i], NULL, server_receive,NULL);
     }
 
@@ -122,8 +126,8 @@ void * accept_connections(void * args) {
 void * server_receive(void *arg) {   
     int first = TRUE;
     int flag = TRUE;
-    int socket_local = tcp_sockets[i];
-    i++;
+    int socket_local = tcp_sockets[client_counter];
+    client_counter++;
 
     while(flag){
         message * msg = malloc(sizeof(message));
@@ -135,6 +139,7 @@ void * server_receive(void *arg) {
         if (msg->action == SHUTDOWN_ACK){
             flag = FALSE;
         }
+        //guardamos el socket de cada cliente para poder enviarle mensajes
         if (first){
             if (strcmp(msg->origin, "P1") == 0) {
                 tcp_socket1 = socket_local;
@@ -177,14 +182,17 @@ int init_Client(char * ip, long port) {
         perror("connect");
         exit(EXIT_FAILURE);
     }
-    //meter thread para escuchar todo el rato 
+    
     return tcp_socket;
 }
 
 int waiting_order() {
     pthread_t thread_id;
+    //creacion de hilo para recibir y poder volver al programa principal
     pthread_create(&thread_id, NULL, receive_messages,NULL);
-	pthread_join(thread_id, NULL);
+    threads_not_collected[nthreads_not_collected] = thread_id;
+    nthreads_not_collected++;
+	
 	return 0;
 }
 
@@ -203,36 +211,44 @@ void * receive_messages() {
 }
 
 int ready_to_shutdown() {
+    int result;
     message msg_out = {0};
     msg_out.action = READY_TO_SHUTDOWN;
     update_clock(NULL, &msg_out);
     strcpy(msg_out.origin,Pid);
 
-    send_message(&msg_out,0);
+    do{
+        result = send_message(&msg_out, 0);
+    }while(result != 0);
     
     return 0;
 }
 
 int shutdown_now(int dest) {
-    
+    int result;
     message msg_out = {0};
     msg_out.action = SHUTDOWN_NOW;
     update_clock(NULL, &msg_out);
     strcpy(msg_out.origin,Pid);
 
-    send_message(&msg_out, dest);
+    do{
+        result = send_message(&msg_out, dest);
+    }while(result != 0);
 
     return 0;
 }
 
 int shutdown_ack() {
-    
+
+    int result;
     message msg_out = {0};
     msg_out.action = SHUTDOWN_ACK;
     update_clock(NULL, &msg_out);
     strcpy(msg_out.origin,Pid);
 
-    send_message(&msg_out, 0);
+    do{
+        result = send_message(&msg_out, 0);
+    }while(result != 0);//si el send fallar se vuelve a intentar mandar el mensaje 
 
     return 0;
 }
@@ -265,11 +281,10 @@ void update_clock(message* msg_in, message* msg_out) {
     }
 }
 
+// get current Lamport clock value
 unsigned int get_clock_lamport() {
     return clock_lamport;
 }
-// get current Lamport clock value
-
 
 unsigned int get_max(unsigned int a, unsigned int b) {
     if (a > b){
@@ -278,7 +293,6 @@ unsigned int get_max(unsigned int a, unsigned int b) {
         return b;
     }
 }
-
 
 char * get_action(int action){
     if (action == READY_TO_SHUTDOWN) {
@@ -290,4 +304,17 @@ char * get_action(int action){
     } else {
         return "ERROR";
     }
+}
+
+int shutdown_machine() {
+    //esperamos a que todos los hilos terminen antes de terminar el programa
+    //estos hilos se han ido guardando durante la ejecucion cuando se han creado
+    //y no podian ser esperados para poder devolver el control al progrma principal 
+    for (int i = 0; i < sizeof(threads_not_collected)/sizeof(pthread_t); i++){
+        if (threads_not_collected[i] == 0){
+            break;
+        }
+        pthread_join(threads_not_collected[i], NULL);
+    }
+    return 0;
 }

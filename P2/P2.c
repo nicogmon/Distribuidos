@@ -5,15 +5,16 @@ const char ID[] = "P2";
 int 
 main(int argc, char *argv[])
 {
-    char * endptr;
-    
-    argc = argc - 2;
-    *argv++;
-    *argv++;
-    
+    char *endptr;
+    argc--;
+    argv++;
+    char *char_ip = argv[0];
+    argc--;
+    argv++;
     long port = strtol(argv[0], &endptr, 10);
     argc--;
     argv++;
+    
 
     if (argc != 0) {
         printf("Incorrect arguments\n, usage: ./P2 <IP> <port>\n");
@@ -25,7 +26,7 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    init(1, NULL, port, ID);
+    init(char_ip, port, ID);
     
     while (get_clock_lamport() < 3)
     {
@@ -37,7 +38,7 @@ main(int argc, char *argv[])
 
     while (get_clock_lamport() < 7)
     {    
-        usleep(100);
+        usleep(500);
         continue;   
      
     }
@@ -46,9 +47,10 @@ main(int argc, char *argv[])
 
     while (get_clock_lamport() < 11)
     {   
-        usleep(100);
+        usleep(500);
         continue;   
     }
     printf("Los clientes fueron correctamente apagados en t(lamport) = %d\n", get_clock_lamport());
+    shutdown_machine();
     return 0;
 }
