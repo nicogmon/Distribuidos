@@ -137,39 +137,51 @@ void * server_receive(void *arg) {
     struct timespec clock_time , start_time , current_time;
     
     request * msg = malloc(sizeof(request));
-    clock_gettime(CLOCK_REALTIME, &start_time);
+    
     sem_wait(&semaphore);
-    clock_gettime(CLOCK_REALTIME, &current_time);
-    double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
+    
     
 
-    if (recv(socket_local, msg, sizeof(request), 0) > 0) {	
-        fprintf(stdout, "Received message from client %d\n", msg->id);
+    if (recv(socket_local, msg, sizeof(request), 0) <= 0) {	
+        perror("recv");
     }
+    
     srand(time(0));
-
-    // Generar un número aleatorio en el rango de 75 a 150
     int rand_sleep_ms = rand() % (150 - 75 + 1) + 75;
-    usleep(rand_sleep_ms * 1000);
     
-    printf("semaphore post\n");
+    
+   
     clock_gettime(CLOCK_REALTIME, &clock_time);
-    double time_stamp = (clock_time.tv_sec + (clock_time.tv_nsec / 1e9)) * 1e6;
+    double time_stamp = (clock_time.tv_sec + (clock_time.tv_nsec / 1e9)) ;
     
-
-    pthread_mutex_lock(&mutex);
-    printf("msg->action = %d\n", msg->action);
+    
+    
     if (msg -> action == WRITE) {
+        clock_gettime(CLOCK_REALTIME, &start_time);
+        pthread_mutex_lock(&mutex);
+        clock_gettime(CLOCK_REALTIME, &current_time);
         //leer valor
         counter++;
         //escrbir valor
         printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
+        usleep(rand_sleep_ms * 1000);
+        //printf("%d\n", rand_sleep_ms * 1000);
+        pthread_mutex_unlock(&mutex);
         
     }
     else if (msg -> action == READ) {
+        clock_gettime(CLOCK_REALTIME, &start_time);
+        pthread_mutex_lock(&mutex);
+        clock_gettime(CLOCK_REALTIME, &current_time);
+        pthread_mutex_unlock(&mutex);
         //leer valor
         printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
+        //printf("%d\n", rand_sleep_ms * 1000);
+        usleep(rand_sleep_ms * 1000);
+        
     }
+    double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
+    //printf("Elapsed time: %f\n", elapsed);
     response res;
     res.action = msg->action;
     res.counter = counter;
@@ -180,7 +192,8 @@ void * server_receive(void *arg) {
         close (socket_local);
         return NULL;
     }
-    pthread_mutex_unlock(&mutex);
+    
+    
     sem_post(&semaphore);
     //free(msg);
     

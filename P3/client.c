@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
                         printf("Invalid mode %s, valid modes write / reader \n", optarg);
                         exit(EXIT_FAILURE);
                     }
-                    printf("mode = %d\n", mode);
+                    //printf("mode = %d\n", mode);
                     break;
                 case 't':
                     if ((nthreads = atoi(optarg)) == 0 || nthreads < 0){
@@ -88,11 +88,9 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < nthreads; i++) {
         init_Client(ip, port, i );
-        printf("mode = %d\n", mode);
         void * args = malloc(sizeof(int));
         *(int *) args = i;
         pthread_create(&threads[i], NULL, thread_actions, args);
-        
     }
 
     for(int i = 0; i < nthreads; i++) {
