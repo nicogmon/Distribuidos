@@ -178,7 +178,7 @@ void * server_receive(void *arg) {
         
         
         //leer valor
-        printf("counter en write  = %d\n", counter);
+        
         counter++;
         if (fseek(output_file, 0, SEEK_SET) < 0) {
             perror("fseek");
