@@ -20,7 +20,7 @@ void * thread_actions( void * args) {
     req->action = get_operation(mode);
     
     req->id = *(int *) args;
-    printf("Sending request %d\n", req->id);
+    //printf("Sending request %d\n", req->id);
     send_request(req);
     receive_messages(args);
 }
