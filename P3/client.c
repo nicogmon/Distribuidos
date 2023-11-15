@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, "i:a:b:t:", long_options, NULL)) != -1) {
             switch (opt) {
                 case 'i':
-                    printf("ip = %s\n", optarg);
+                    //printf("ip = %s\n", optarg);
                     strcpy(ip, optarg);
                     break;
                 case 'a':
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
                         printf("Incorrect format port\n");
                         return 1;
                     }
-                    printf("port = %ld\n", port);
+                    //printf("port = %ld\n", port);
                     break;
                 case 'b':
                     if (strcmp(optarg, "writer") == 0) {
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
                         fprintf(stderr, "Invalid number of threads\n");
                         exit(EXIT_FAILURE);
                     }
-                    printf("threads = %d\n", nthreads);
+                    //printf("threads = %d\n", nthreads);
                     break;
                 default:
                     printf("Usage: %s --port <port> --priority <priority>\n", argv[0]);

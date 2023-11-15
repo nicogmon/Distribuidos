@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
                         printf("Incorrect format port\n");
                         return 1;
                     }
-                    printf("port = %ld\n", port);
+                    //printf("port = %ld\n", port);
                     break;
                 case 'b':
                     if (strcmp(optarg, "writer") == 0) {
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
                         printf("Invalid priority %s, valid priorities write / reader \n", optarg);
                         exit(EXIT_FAILURE);
                     }
-                    printf("priority = %d\n", priority);
+                    //printf("priority = %d\n", priority);
                     break;
                 default:
                     printf("Usage: %s --port <port> --priority <priority>\n", argv[0]);

@@ -109,7 +109,7 @@ void * accept_connections(void * args) {
             exit(EXIT_FAILURE);
         }
         
-        printf("Connection accepted\n");
+        
         void * recv_args = malloc(sizeof(int));
         *(int *) recv_args = local_socket;
         
