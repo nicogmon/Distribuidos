@@ -40,7 +40,7 @@ sem_t semaphore;
 pthread_t threads_not_collected [MAX_CLIENTS];
 int nthreads_not_collected = 0;
 
-int counter;
+int counter = 0;
 
 int init_Server(long port) {
     
@@ -89,13 +89,15 @@ int init_Server(long port) {
     nthreads_not_collected++;
 
     
-    FILE * output_file = fopen("server_output.txt", "w+");
+    FILE * output_file = fopen("server_output.txt", "a+");
     if (output_file == NULL) {
         perror("Error opening server_output file");
         exit(EXIT_FAILURE);
     }
+    if (fscanf(output_file, "%d", &counter) == EOF) {
+        fprintf(output_file, "%d", 0);
+    }
     
-    fprintf(output_file, "%d", 0);
     fclose(output_file);
     return 0;
     }
