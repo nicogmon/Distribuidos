@@ -4,7 +4,9 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <sys/types.h>		
+#include <sys/types.h>	
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -22,7 +24,7 @@
 #define FALSE 0
 #define TRUE 1
 
-int counter = 0;
+
 unsigned int clock_lamport = 0;
 
 int tcp_socket;
@@ -38,7 +40,7 @@ sem_t semaphore;
 pthread_t threads_not_collected [MAX_CLIENTS];
 int nthreads_not_collected = 0;
 
-
+int counter;
 
 int init_Server(long port) {
     
@@ -85,6 +87,16 @@ int init_Server(long port) {
     pthread_create(&thread_id, NULL, accept_connections, (void *) args);
     threads_not_collected[nthreads_not_collected] = thread_id;
     nthreads_not_collected++;
+
+    
+    FILE * output_file = fopen("server_output.txt", "w+");
+    if (output_file == NULL) {
+        perror("Error opening server_output file");
+        exit(EXIT_FAILURE);
+    }
+    
+    fprintf(output_file, "%d", 0);
+    fclose(output_file);
     return 0;
     }
 
@@ -160,24 +172,47 @@ void * server_receive(void *arg) {
         clock_gettime(CLOCK_REALTIME, &start_time);
         pthread_mutex_lock(&mutex);
         clock_gettime(CLOCK_REALTIME, &current_time);
+        FILE * output_file = fopen("server_output.txt", "r+");
+        
+        fscanf(output_file, "%d", &counter);
+        
+        
         //leer valor
+        printf("counter en write  = %d\n", counter);
         counter++;
-        //escrbir valor
+        if (fseek(output_file, 0, SEEK_SET) < 0) {
+            perror("fseek");
+            sem_post(&semaphore);
+            pthread_mutex_unlock(&mutex);
+            close (socket_local);
+            return NULL;
+        }
+        if (fprintf(output_file, "%d", counter) < 0) {
+            perror("write");
+            sem_post(&semaphore);
+            pthread_mutex_unlock(&mutex);
+            close (socket_local);
+            return NULL;
+        }
+        
         printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
         usleep(rand_sleep_ms * 1000);
         //printf("%d\n", rand_sleep_ms * 1000);
         pthread_mutex_unlock(&mutex);
+        fclose(output_file);
         
     }
     else if (msg -> action == READ) {
+        FILE * output_file = fopen("server_output.txt", "r");
         clock_gettime(CLOCK_REALTIME, &start_time);
         pthread_mutex_lock(&mutex);
         clock_gettime(CLOCK_REALTIME, &current_time);
         pthread_mutex_unlock(&mutex);
-        //leer valor
+        
         printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
         //printf("%d\n", rand_sleep_ms * 1000);
         usleep(rand_sleep_ms * 1000);
+        fclose(output_file);
         
     }
     double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
@@ -192,8 +227,6 @@ void * server_receive(void *arg) {
         close (socket_local);
         return NULL;
     }
-    
-    
     sem_post(&semaphore);
     //free(msg);
     
