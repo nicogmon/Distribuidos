@@ -26,4 +26,4 @@ $(LIBRARY): stub.o
 	ar rcs $@ stub.o
 
 clean:
-	rm -f $(OBJS) server client  $(LIBRARY) server.o client.o 
+	rm -f $(OBJS) server client  $(LIBRARY) server.o client.o server_output.txt

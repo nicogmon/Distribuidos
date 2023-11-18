@@ -41,7 +41,7 @@ sem_t semaphore;
 int n_readers = 0;
 int n_writers = 0;
 
-enum mode server_mode;
+enum mode server_pryority;
 
 
 pthread_t threads_not_collected [MAX_CLIENTS];
@@ -53,7 +53,7 @@ int init_Server(long port, enum mode priority) {
     
     setbuf(stdout, NULL);
     
-    server_mode = priority;
+    server_pryority = priority;
 
     struct sockaddr_in server_addr;
 
@@ -182,7 +182,7 @@ void * server_receive(void *arg) {
     if (msg -> action == WRITE) {
         clock_gettime(CLOCK_REALTIME, &start_time);
         pthread_mutex_lock(&mutex);
-        if (server_mode == READER){
+        if (server_pryority == READER){
             while (n_readers > 0 || n_writers > 0 ) {
                 pthread_cond_wait(&read_cond, &mutex);
             }
@@ -216,7 +216,7 @@ void * server_receive(void *arg) {
         usleep(rand_sleep_ms * 1000);
         //printf("%d\n", rand_sleep_ms * 1000);
         n_writers--;
-        if (server_mode == READER && n_writers == 0) {
+        if (server_pryority == READER && n_writers == 0) {
             pthread_cond_broadcast(&read_cond);
         }
         pthread_mutex_unlock(&mutex);
@@ -227,7 +227,7 @@ void * server_receive(void *arg) {
         
         clock_gettime(CLOCK_REALTIME, &start_time);
         pthread_mutex_lock(&mutex);
-        if (server_mode == WRITER){
+        if (server_pryority == WRITER){
             while (n_writers > 0 ) {
                 pthread_cond_wait(&read_cond, &mutex);
             }
@@ -240,10 +240,12 @@ void * server_receive(void *arg) {
         //printf("%d\n", rand_sleep_ms * 1000);
         usleep(rand_sleep_ms * 1000);
         
+        pthread_mutex_lock(&mutex);
         n_readers--;
-        if (server_mode == WRITER && n_readers == 0) {
+        if (server_pryority == WRITER && n_readers == 0) {
             pthread_cond_signal(&read_cond);
         }
+        pthread_mutex_unlock(&mutex);
         
     }
     double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
