@@ -49,7 +49,7 @@ struct threadArgs {
 };
 typedef struct threadArgs threadArgs;
 
-int  init_Server(long port);
+int  init_Server(long port, enum mode priority);
 
 void *  accept_connections(void * args);
 

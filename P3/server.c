@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
             }
     }
     
-    init_Server(port);
+    init_Server(port, priority);
     signal(SIGINT, handler);
 
     while (!exit_flag) {

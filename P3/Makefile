@@ -9,7 +9,7 @@ LIBRARY = libstub.a
 
 # Regla para generar archivos objeto
 %.o: %.c
-	$(CC) -c -o  $@ $< $(CFLAGS) -lm
+	$(CC) -c -o  $@ $< $(CFLAGS) -lm -g
 
 # Regla para compilar todos los programas
 all: server client

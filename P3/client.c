@@ -23,6 +23,8 @@ void * thread_actions( void * args) {
     //printf("Sending request %d\n", req->id);
     send_request(req);
     receive_messages(args);
+    free(req);
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -94,6 +96,8 @@ int main(int argc, char *argv[]) {
     }
 
     for(int i = 0; i < nthreads; i++) {
+        
         pthread_join(threads[i], NULL);
     }
+    exit (EXIT_SUCCESS);
 }
