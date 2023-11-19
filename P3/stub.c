@@ -180,84 +180,83 @@ void * server_receive(void *arg) {
     
     if (server_pryority == WRITER){
         if (msg -> action == WRITE) {
-        clock_gettime(CLOCK_REALTIME, &start_time);
-        n_writers++;
-        if (n_readers > 0 ){
-            pthread_cond_wait(&write_cond, &mutex);
-        }
-        pthread_mutex_lock(&mutex);
-
-        clock_gettime(CLOCK_REALTIME, &current_time);
-
-        FILE * output_file = fopen("server_output.txt", "r+");
+            clock_gettime(CLOCK_REALTIME, &start_time);
+            pthread_mutex_lock(&mutex);
+            n_writers++;
+            if (n_readers > 0 ){
+                pthread_cond_wait(&write_cond, &mutex);
+            }
+    
+            clock_gettime(CLOCK_REALTIME, &current_time);
+    
+            FILE * output_file = fopen("server_output.txt", "r+");
+            
+            fscanf(output_file, "%d", &counter);
+    
+            counter++;
+    
+            if (fseek(output_file, 0, SEEK_SET) < 0) {
+                perror("fseek");
+                sem_post(&semaphore);
+                pthread_mutex_unlock(&mutex);
+                close (socket_local);
+                return NULL;
+            }
+            if (fprintf(output_file, "%d", counter) < 0) {
+                perror("write");
+                sem_post(&semaphore);
+                pthread_mutex_unlock(&mutex);
+                close (socket_local);
+                return NULL;
+            }
+            
+            printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
+            res.counter = counter;
+            usleep(rand_sleep_ms * 1000);
+            //printf("%d\n", rand_sleep_ms * 1000);
         
-        fscanf(output_file, "%d", &counter);
-
-        counter++;
-
-        if (fseek(output_file, 0, SEEK_SET) < 0) {
-            perror("fseek");
-            sem_post(&semaphore);
+            n_writers--;
+            if (n_writers == 0) {
+                pthread_cond_broadcast(&read_cond);
+            }
             pthread_mutex_unlock(&mutex);
+            fclose(output_file);
+        
+        }
+        else if (msg -> action == READ) {
+
+            clock_gettime(CLOCK_REALTIME, &start_time);
+            pthread_mutex_lock(&mutex);
+            while (n_writers > 0 ) {
+                pthread_cond_wait(&read_cond, &mutex);
+            }
+            pthread_mutex_unlock(&mutex);
+            n_readers++;
+            clock_gettime(CLOCK_REALTIME, &current_time);
+            res.counter = counter;
+            printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
+            usleep(rand_sleep_ms * 1000);
+            n_readers--;
+            if (n_readers == 0) {
+                pthread_cond_broadcast(&write_cond);
+            }
+
+
+        }
+
+
+
+        double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
+
+        res.action = msg->action;
+
+        res.latency_time = elapsed * 1e9;
+        if (send(socket_local, &res, sizeof(response), 0) < 0) {
+            perror("send");
+            sem_post(&semaphore);
             close (socket_local);
             return NULL;
         }
-        if (fprintf(output_file, "%d", counter) < 0) {
-            perror("write");
-            sem_post(&semaphore);
-            pthread_mutex_unlock(&mutex);
-            close (socket_local);
-            return NULL;
-        }
-        
-        printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
-        res.counter = counter;
-        usleep(rand_sleep_ms * 1000);
-        //printf("%d\n", rand_sleep_ms * 1000);
-       
-        n_writers--;
-        if (n_writers == 0) {
-            pthread_cond_broadcast(&read_cond);
-        }
-        pthread_mutex_unlock(&mutex);
-        fclose(output_file);
-        
-    }
-    else if (msg -> action == READ) {
-        
-        clock_gettime(CLOCK_REALTIME, &start_time);
-        pthread_mutex_lock(&mutex);
-        while (n_writers > 0 ) {
-            pthread_cond_wait(&read_cond, &mutex);
-        }
-        pthread_mutex_unlock(&mutex);
-        n_readers++;
-        clock_gettime(CLOCK_REALTIME, &current_time);
-        res.counter = counter;
-        printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
-        usleep(rand_sleep_ms * 1000);
-        n_readers--;
-        if (n_readers == 0) {
-            pthread_cond_broadcast(&write_cond);
-        }
-        
-
-    }
-
-
-
-    double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
-    //printf("Elapsed time: %f\n", elapsed);
-    
-    res.action = msg->action;
-    
-    res.latency_time = elapsed * 1e9;
-    if (send(socket_local, &res, sizeof(response), 0) < 0) {
-        perror("send");
-        sem_post(&semaphore);
-        close (socket_local);
-        return NULL;
-    }
     }
 
 
