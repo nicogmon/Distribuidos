@@ -1,22 +1,9 @@
 #include "stub.h"
 #include <getopt.h>
 
-int exit_flag = 0;
 
-void
-handler(int number)
-{
-	switch (number) {
-	case SIGINT:
-		fprintf(stderr, "SIGINT received!\n");
-		exit_flag = 1;
-		break;
-	
-	case SIGPIPE:
-		fprintf(stderr, "SIGPIPE received!\n");
-		break;
-	}
-}
+
+
 
 
 int main(int argc, char *argv[]) {
@@ -58,12 +45,7 @@ int main(int argc, char *argv[]) {
     }
     
     init_Server(port, priority);
-    signal(SIGINT, handler);
+    
 
-    while (!exit_flag) {
-        sleep(1);
-    }
-
-   
     
 }

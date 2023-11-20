@@ -34,13 +34,17 @@ int client_counter = 0;
 char Pid [PID_LENGTH];
 
 pthread_mutex_t mutex;
+pthread_mutex_t aux_mutex;
 
 pthread_cond_t read_cond;
 pthread_cond_t write_cond;
+
 sem_t semaphore;
 
 int n_readers = 0;
 int n_writers = 0;
+
+int exit_flag = 0;
 
 enum mode server_pryority;
 
@@ -49,6 +53,23 @@ pthread_t threads_not_collected [MAX_CLIENTS];
 int nthreads_not_collected = 0;
 
 int counter = 0;
+
+
+
+void
+handler(int number)
+{
+	switch (number) {
+	case SIGINT:
+		fprintf(stderr, "SIGINT received!\n");
+		exit_flag = 1;
+		break;
+	
+	case SIGPIPE:
+		fprintf(stderr, "SIGPIPE received!\n");
+		break;
+	}
+}
 
 int init_Server(long port, enum mode priority) {
     
@@ -109,12 +130,15 @@ int init_Server(long port, enum mode priority) {
     }
     
     fclose(output_file);
+    
+    pthread_join(thread_id, NULL);
+    
     return 0;
     }
 
 // establish connections between processes
 void * accept_connections(void * args) {
-    pthread_t thread_ids[MAX_CLIENTS];
+    pthread_t thread_ids[MAX_CONNECTIONS];
     threadArgs * arguments =(threadArgs *) args;
     struct sockaddr_in * server_addr = &arguments->server_addr;
     int * addrlen = &arguments->addrlen;
@@ -124,7 +148,10 @@ void * accept_connections(void * args) {
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < MAX_CONNECTIONS; i++){
+    signal(SIGINT, handler);
+    int x = 0;
+
+    while(!exit_flag) {
         int local_socket;
         
         if ((local_socket = accept(tcp_socket, (struct sockaddr *)server_addr,
@@ -139,14 +166,24 @@ void * accept_connections(void * args) {
         
         //creamos un hilo por cada conexion que se quedar escchando indefinidadmente
         //sin interrumpir la ejecucion del hilo principal 
-        pthread_create(&thread_ids[i], NULL, server_receive, recv_args);
+        pthread_create(&thread_ids[x], NULL, server_receive, recv_args);
+
+        x++;
+
+        if (x == MAX_CONNECTIONS) {
+            for (int i = 0; i < MAX_CONNECTIONS; i++) {
+                pthread_join(thread_ids[i], NULL);
+                thread_ids[i] = 0;
+            }
+            x = 0;
+        
+        }
     }
-
-    
-
-    for (int i = 0; i < MAX_CLIENTS; i++){
+    for (int i = 0; i < x; i++) {
         pthread_join(thread_ids[i], NULL);
     }
+    
+    free(args);
     
     return 0;  
 }
@@ -164,9 +201,7 @@ void * server_receive(void *arg) {
     
     sem_wait(&semaphore);
     
-    
-
-    if (recv(socket_local, msg, sizeof(request), 0) <= 0) {	
+    if (recv(socket_local, msg, sizeof(request), 0) <= 0) {
         perror("recv");
     }
     
@@ -181,12 +216,16 @@ void * server_receive(void *arg) {
     if (server_pryority == WRITER){
         if (msg -> action == WRITE) {
             clock_gettime(CLOCK_REALTIME, &start_time);
-            pthread_mutex_lock(&mutex);
+            pthread_mutex_lock(&aux_mutex);
             n_writers++;
+            pthread_mutex_unlock(&aux_mutex);
+            
+            pthread_mutex_lock(&mutex);
+            
             if (n_readers > 0 ){
                 pthread_cond_wait(&write_cond, &mutex);
             }
-    
+            
             clock_gettime(CLOCK_REALTIME, &current_time);
     
             FILE * output_file = fopen("server_output.txt", "r+");
@@ -216,10 +255,14 @@ void * server_receive(void *arg) {
             //printf("%d\n", rand_sleep_ms * 1000);
         
             n_writers--;
+
+            
             if (n_writers == 0) {
                 pthread_cond_broadcast(&read_cond);
             }
+            pthread_cond_signal(&write_cond);
             pthread_mutex_unlock(&mutex);
+            
             fclose(output_file);
         
         }
@@ -227,24 +270,25 @@ void * server_receive(void *arg) {
 
             clock_gettime(CLOCK_REALTIME, &start_time);
             pthread_mutex_lock(&mutex);
+            
             while (n_writers > 0 ) {
                 pthread_cond_wait(&read_cond, &mutex);
             }
-            pthread_mutex_unlock(&mutex);
             n_readers++;
+            pthread_mutex_unlock(&mutex);
+            
+            
             clock_gettime(CLOCK_REALTIME, &current_time);
             res.counter = counter;
             printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
             usleep(rand_sleep_ms * 1000);
+            pthread_mutex_lock(&mutex);
             n_readers--;
             if (n_readers == 0) {
-                pthread_cond_broadcast(&write_cond);
+                pthread_cond_signal(&write_cond);
             }
-
-
+            pthread_mutex_unlock(&mutex);
         }
-
-
 
         double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
 
@@ -260,98 +304,103 @@ void * server_receive(void *arg) {
     }
 
 
-
-
-
     if (server_pryority == READER){
-    if (msg -> action == WRITE) {
-        clock_gettime(CLOCK_REALTIME, &start_time);
-        pthread_mutex_lock(&mutex);
-        if (server_pryority == READER){
-            while (n_readers > 0 || n_writers > 0 ) {
+        if (msg -> action == WRITE) {
+            clock_gettime(CLOCK_REALTIME, &start_time);
+
+            pthread_mutex_lock(&mutex);
+            
+            if (n_readers > 0 ){
                 pthread_cond_wait(&write_cond, &mutex);
             }
-        }
-        n_writers++;
-
-        clock_gettime(CLOCK_REALTIME, &current_time);
-
-        FILE * output_file = fopen("server_output.txt", "r+");
+            n_writers++;
+            
+            clock_gettime(CLOCK_REALTIME, &current_time);
+    
+            FILE * output_file = fopen("server_output.txt", "r+");
+            
+            fscanf(output_file, "%d", &counter);
+    
+            counter++;
+    
+            if (fseek(output_file, 0, SEEK_SET) < 0) {
+                perror("fseek");
+                sem_post(&semaphore);
+                pthread_mutex_unlock(&mutex);
+                close (socket_local);
+                return NULL;
+            }
+            if (fprintf(output_file, "%d", counter) < 0) {
+                perror("write");
+                sem_post(&semaphore);
+                pthread_mutex_unlock(&mutex);
+                close (socket_local);
+                return NULL;
+            }
+            
+            printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
+            res.counter = counter;
+            usleep(rand_sleep_ms * 1000);
+            //printf("%d\n", rand_sleep_ms * 1000);
         
-        fscanf(output_file, "%d", &counter);
+            n_writers--;
 
-        counter++;
-
-        if (fseek(output_file, 0, SEEK_SET) < 0) {
-            perror("fseek");
-            sem_post(&semaphore);
+            
+            if (n_writers == 0) {
+                pthread_cond_broadcast(&read_cond);
+            }
+            pthread_cond_signal(&write_cond);
             pthread_mutex_unlock(&mutex);
-            close (socket_local);
-            return NULL;
-        }
-        if (fprintf(output_file, "%d", counter) < 0) {
-            perror("write");
-            sem_post(&semaphore);
-            pthread_mutex_unlock(&mutex);
-            close (socket_local);
-            return NULL;
-        }
+            
+            fclose(output_file);
         
-        printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
-        usleep(rand_sleep_ms * 1000);
-        //printf("%d\n", rand_sleep_ms * 1000);
-        n_writers--;
-        if (server_pryority == READER && n_writers == 0) {
-            pthread_cond_broadcast(&read_cond);
         }
-        pthread_mutex_unlock(&mutex);
-        fclose(output_file);
-        
-    }
-    else if (msg -> action == READ) {
-        
-        clock_gettime(CLOCK_REALTIME, &start_time);
-        pthread_mutex_lock(&mutex);
-        if (server_pryority == WRITER){
+        else if (msg -> action == READ) {
+
+            clock_gettime(CLOCK_REALTIME, &start_time);
+            pthread_mutex_lock(&aux_mutex);
+            n_readers++;
+            pthread_mutex_unlock(&aux_mutex);
+            pthread_mutex_lock(&mutex);
+            
             while (n_writers > 0 ) {
                 pthread_cond_wait(&read_cond, &mutex);
             }
+            
+            pthread_mutex_unlock(&mutex);
+            
+            
+            clock_gettime(CLOCK_REALTIME, &current_time);
+            res.counter = counter;
+            printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
+            usleep(rand_sleep_ms * 1000);
+            pthread_mutex_lock(&mutex);
+            n_readers--;
+            if (n_readers == 0) {
+                pthread_cond_signal(&write_cond);
+            }
+            pthread_mutex_unlock(&mutex);
         }
-        n_readers++;
-        clock_gettime(CLOCK_REALTIME, &current_time);
-        pthread_mutex_unlock(&mutex);
-        
-        printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
-        //printf("%d\n", rand_sleep_ms * 1000);
-        usleep(rand_sleep_ms * 1000);
-        
-        pthread_mutex_lock(&mutex);
-        n_readers--;
-        if (server_pryority == WRITER && n_readers == 0) {
-            pthread_cond_signal(&read_cond);
+
+        double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
+
+        res.action = msg->action;
+
+        res.latency_time = elapsed * 1e9;
+        if (send(socket_local, &res, sizeof(response), 0) < 0) {
+            perror("send");
+            sem_post(&semaphore);
+            close (socket_local);
+            return NULL;
         }
-        pthread_mutex_unlock(&mutex);
         
     }
-    }
-    double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
-    //printf("Elapsed time: %f\n", elapsed);
     
-    res.action = msg->action;
-    res.counter = counter;
-    res.latency_time = elapsed * 1e9;
-    if (send(socket_local, &res, sizeof(response), 0) < 0) {
-        perror("send");
-        sem_post(&semaphore);
-        close (socket_local);
-        return NULL;
-    }
     sem_post(&semaphore);
-    //free(msg);
+    free(msg);
+    free(arg);
+    return NULL;
     
-    
-    
-   
 }
 
 int init_Client(char * ip, long port, int id) {

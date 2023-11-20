@@ -24,6 +24,7 @@ void * thread_actions( void * args) {
     send_request(req);
     receive_messages(args);
     free(req);
+    free(args);
     return NULL;
 }
 
