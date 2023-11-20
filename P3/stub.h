@@ -60,7 +60,6 @@ int send_request(request * req);
 int send_response(response res, int arg_socket);
 
 
-
 void * receive_messages(void * args);
 
 void * server_receive(void *arg);

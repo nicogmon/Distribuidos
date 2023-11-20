@@ -18,6 +18,7 @@
 #include <semaphore.h>
 #include "stub.h"
 
+
 #define MAX_CLIENTS 600
 #define PID_LENGTH 5
 #define MAX_CONNECTIONS 1000
@@ -178,13 +179,13 @@ void * accept_connections(void * args) {
             }   
         }
         z++;
-        recv_args * recv_args = malloc(sizeof(recv_args));
-        recv_args->socket = local_socket;
-        recv_args->pos = x;
+        recv_args * recv_Args = malloc(sizeof(recv_args));
+        recv_Args->socket = local_socket;
+        recv_Args->pos = x;
         
         //creamos un hilo por cada conexion que se quedar escchando indefinidadmente
         //sin interrumpir la ejecucion del hilo principal 
-        pthread_create(&thread_ids[x], NULL, server_receive, recv_args);
+        pthread_create(&thread_ids[x], NULL, server_receive, recv_Args);
 
         
 
@@ -223,11 +224,11 @@ void * server_receive(void *arg) {
     response res;
    
     clock_gettime(CLOCK_REALTIME, &clock_time);
-    double time_stamp = (clock_time.tv_sec + (clock_time.tv_nsec / 1e9)) ;
+    double time_stamp = (clock_time.tv_sec + (clock_time.tv_nsec / 1e9));
     
     if (server_pryority == WRITER){
         if (msg -> action == WRITE) {
-            clock_gettime(CLOCK_REALTIME, &start_time);
+            clock_gettime(CLOCK_MONOTONIC, &start_time);
             pthread_mutex_lock(&aux_mutex);
             n_writers++;
             pthread_mutex_unlock(&aux_mutex);
@@ -238,7 +239,7 @@ void * server_receive(void *arg) {
                 pthread_cond_wait(&write_cond, &mutex);
             }
             
-            clock_gettime(CLOCK_REALTIME, &current_time);
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
     
             FILE * output_file = fopen("server_output.txt", "r+");
             
@@ -280,7 +281,7 @@ void * server_receive(void *arg) {
         }
         else if (msg -> action == READ) {
 
-            clock_gettime(CLOCK_REALTIME, &start_time);
+            clock_gettime(CLOCK_MONOTONIC, &start_time);
             pthread_mutex_lock(&mutex);
             
             while (n_writers > 0 ) {
@@ -290,7 +291,7 @@ void * server_receive(void *arg) {
             pthread_mutex_unlock(&mutex);
             
             
-            clock_gettime(CLOCK_REALTIME, &current_time);
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
             res.counter = counter;
             printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
             usleep(rand_sleep_ms * 1000);
@@ -318,7 +319,7 @@ void * server_receive(void *arg) {
 
     if (server_pryority == READER){
         if (msg -> action == WRITE) {
-            clock_gettime(CLOCK_REALTIME, &start_time);
+            clock_gettime(CLOCK_MONOTONIC, &start_time);
 
             pthread_mutex_lock(&mutex);
             
@@ -327,7 +328,7 @@ void * server_receive(void *arg) {
             }
             n_writers++;
             
-            clock_gettime(CLOCK_REALTIME, &current_time);
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
     
             FILE * output_file = fopen("server_output.txt", "r+");
             
@@ -369,7 +370,7 @@ void * server_receive(void *arg) {
         }
         else if (msg -> action == READ) {
 
-            clock_gettime(CLOCK_REALTIME, &start_time);
+            clock_gettime(CLOCK_MONOTONIC, &start_time);
             pthread_mutex_lock(&aux_mutex);
             n_readers++;
             pthread_mutex_unlock(&aux_mutex);
@@ -382,7 +383,7 @@ void * server_receive(void *arg) {
             pthread_mutex_unlock(&mutex);
             
             
-            clock_gettime(CLOCK_REALTIME, &current_time);
+            clock_gettime(CLOCK_MONOTONIC, &current_time);
             res.counter = counter;
             printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
             usleep(rand_sleep_ms * 1000);
@@ -411,6 +412,7 @@ void * server_receive(void *arg) {
     sem_post(&semaphore);
     free(msg);
     free(arg);
+    close (socket_local);
     free_pos[pos] = TRUE;
     pthread_exit(NULL);
     

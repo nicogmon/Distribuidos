@@ -1,9 +1,9 @@
 CC=gcc
-CFLAGS=-I. -pthread
+CFLAGS=-I. -Wall -Wshadow -lpthread
 LIBS = -lm
 
 # Lista de archivos fuente y objetos
-SRCS =  server.c client.c stub.c#P1.c P2.c P3.c stub.c
+SRCS =  server.c client.c stub.c
 OBJS = $(SRCS:.c=.o)
 LIBRARY = libstub.a
 

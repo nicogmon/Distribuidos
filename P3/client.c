@@ -1,9 +1,9 @@
 #include "stub.h"
 #include <getopt.h>
 
-enum mode mode;
+enum mode client_mode;
 
-enum operations get_operation(enum mode mode) {
+enum operations get_operation( enum mode mode) {
     
     if (mode == WRITER) {
         return WRITE;
@@ -17,7 +17,7 @@ enum operations get_operation(enum mode mode) {
 
 void * thread_actions( void * args) {
     request * req = malloc(sizeof(request));
-    req->action = get_operation(mode);
+    req->action = get_operation(client_mode);
     
     req->id = *(int *) args;
     //printf("Sending request %d\n", req->id);
@@ -63,9 +63,9 @@ int main(int argc, char *argv[]) {
                     break;
                 case 'b':
                     if (strcmp(optarg, "writer") == 0) {
-                        mode = WRITER;
+                        client_mode = WRITER;
                     } else if (strcmp(optarg, "reader") == 0) {
-                        mode = READER;
+                        client_mode = READER;
                     } else {
                         printf("Invalid mode %s, valid modes write / reader \n", optarg);
                         exit(EXIT_FAILURE);
