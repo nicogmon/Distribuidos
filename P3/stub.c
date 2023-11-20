@@ -229,20 +229,34 @@ void * server_receive(void *arg) {
     clock_gettime(CLOCK_REALTIME, &time_stamp);
     
     
-    if (server_pryority == WRITER){
+    
         if (msg -> action == WRITE) {
-            clock_gettime(CLOCK_MONOTONIC, &start_time);
-            pthread_mutex_lock(&aux_mutex);
-            n_writers++;
-            pthread_mutex_unlock(&aux_mutex);
-            
-            pthread_mutex_lock(&mutex);
-            
-            if (n_readers > 0 ){
-                pthread_cond_wait(&write_cond, &mutex);
+            if (server_pryority == WRITER){
+                clock_gettime(CLOCK_MONOTONIC, &start_time);
+                pthread_mutex_lock(&aux_mutex);
+                n_writers++;
+                pthread_mutex_unlock(&aux_mutex);
+
+                pthread_mutex_lock(&mutex);
+
+                if (n_readers > 0 ){
+                    pthread_cond_wait(&write_cond, &mutex);
+                }
+
+                clock_gettime(CLOCK_MONOTONIC, &current_time);
             }
-            
-            clock_gettime(CLOCK_MONOTONIC, &current_time);
+            if (server_pryority == READER){
+                clock_gettime(CLOCK_MONOTONIC, &start_time);
+
+                pthread_mutex_lock(&mutex);
+
+                if (n_readers > 0 ){
+                    pthread_cond_wait(&write_cond, &mutex);
+                }
+                n_writers++;
+
+                clock_gettime(CLOCK_MONOTONIC, &current_time);
+            }
     
             FILE * output_file = fopen("server_output.txt", "r+");
             
@@ -283,16 +297,29 @@ void * server_receive(void *arg) {
         
         }
         else if (msg -> action == READ) {
+            if (server_pryority == WRITER){
+                clock_gettime(CLOCK_MONOTONIC, &start_time);
+                pthread_mutex_lock(&mutex);
 
-            clock_gettime(CLOCK_MONOTONIC, &start_time);
-            pthread_mutex_lock(&mutex);
-            
-            while (n_writers > 0 ) {
-                pthread_cond_wait(&read_cond, &mutex);
+                while (n_writers > 0 ) {
+                    pthread_cond_wait(&read_cond, &mutex);
+                }
+                n_readers++;
+                pthread_mutex_unlock(&mutex);
             }
-            n_readers++;
-            pthread_mutex_unlock(&mutex);
+            if (server_pryority == READER){
+                clock_gettime(CLOCK_MONOTONIC, &start_time);
+                pthread_mutex_lock(&aux_mutex);
+                n_readers++;
+                pthread_mutex_unlock(&aux_mutex);
+                pthread_mutex_lock(&mutex);
             
+                while (n_writers > 0 ) {
+                    pthread_cond_wait(&read_cond, &mutex);
+            }
+            
+            pthread_mutex_unlock(&mutex);
+            }
             
             clock_gettime(CLOCK_MONOTONIC, &current_time);
             res.counter = counter;
@@ -318,100 +345,6 @@ void * server_receive(void *arg) {
             close (socket_local);
             return NULL;
         }
-    }
-
-
-    if (server_pryority == READER){
-        if (msg -> action == WRITE) {
-            clock_gettime(CLOCK_MONOTONIC, &start_time);
-
-            pthread_mutex_lock(&mutex);
-            
-            if (n_readers > 0 ){
-                pthread_cond_wait(&write_cond, &mutex);
-            }
-            n_writers++;
-            
-            clock_gettime(CLOCK_MONOTONIC, &current_time);
-    
-            FILE * output_file = fopen("server_output.txt", "r+");
-            
-            fscanf(output_file, "%d", &counter);
-    
-            counter++;
-    
-            if (fseek(output_file, 0, SEEK_SET) < 0) {
-                perror("fseek");
-                sem_post(&semaphore);
-                pthread_mutex_unlock(&mutex);
-                close (socket_local);
-                return NULL;
-            }
-            if (fprintf(output_file, "%d", counter) < 0) {
-                perror("write");
-                sem_post(&semaphore);
-                pthread_mutex_unlock(&mutex);
-                close (socket_local);
-                return NULL;
-            }
-            
-            printf("[%ld.%ld][ESCRITOR %d] modifica contador con valor %d\n",time_stamp.tv_sec, time_stamp.tv_nsec / NANO_MICRO  , msg->id, counter);
-            res.counter = counter;
-            usleep(rand_sleep_ms * SECS_MILI);
-            //printf("%d\n", rand_sleep_ms * 1000);
-        
-            n_writers--;
-
-            
-            if (n_writers == 0) {
-                pthread_cond_broadcast(&read_cond);
-            }
-            pthread_cond_signal(&write_cond);
-            pthread_mutex_unlock(&mutex);
-            
-            fclose(output_file);
-        
-        }
-        else if (msg -> action == READ) {
-
-            clock_gettime(CLOCK_MONOTONIC, &start_time);
-            pthread_mutex_lock(&aux_mutex);
-            n_readers++;
-            pthread_mutex_unlock(&aux_mutex);
-            pthread_mutex_lock(&mutex);
-            
-            while (n_writers > 0 ) {
-                pthread_cond_wait(&read_cond, &mutex);
-            }
-            
-            pthread_mutex_unlock(&mutex);
-            
-            
-            clock_gettime(CLOCK_MONOTONIC, &current_time);
-            res.counter = counter;
-            printf("[%ld.%ld][LECTOR %d] lee contador con valor %d\n", time_stamp.tv_sec, time_stamp.tv_nsec , msg->id, counter);
-            usleep(rand_sleep_ms * 1000);
-            pthread_mutex_lock(&mutex);
-            n_readers--;
-            if (n_readers == 0) {
-                pthread_cond_signal(&write_cond);
-            }
-            pthread_mutex_unlock(&mutex);
-        }
-
-        double elapsed = (current_time.tv_sec * SECS_NANO  + current_time.tv_nsec ) - (start_time.tv_sec * SECS_NANO +  start_time.tv_nsec );
-
-        res.action = msg->action;
-
-        res.latency_time = elapsed;
-        if (send(socket_local, &res, sizeof(response), 0) < 0) {
-            perror("send");
-            sem_post(&semaphore);
-            close (socket_local);
-            return NULL;
-        }
-        
-    }
     
     sem_post(&semaphore);
     free(msg);
