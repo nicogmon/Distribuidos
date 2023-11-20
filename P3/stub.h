@@ -36,11 +36,11 @@ long latency_time;
 };
 typedef struct response response;
 
-struct communication_info {
-    int tcp_socket;
-    char Pid[5];
+struct recv_args {
+    int socket;
+    int pos;
 };
-typedef struct communication_info communication_info;
+typedef struct recv_args recv_args;
 
 struct threadArgs {
     

@@ -54,6 +54,8 @@ int nthreads_not_collected = 0;
 
 int counter = 0;
 
+int free_pos[MAX_CLIENTS];
+
 
 
 void
@@ -138,7 +140,7 @@ int init_Server(long port, enum mode priority) {
 
 // establish connections between processes
 void * accept_connections(void * args) {
-    pthread_t thread_ids[MAX_CONNECTIONS];
+    pthread_t thread_ids[MAX_CLIENTS];
     threadArgs * arguments =(threadArgs *) args;
     struct sockaddr_in * server_addr = &arguments->server_addr;
     int * addrlen = &arguments->addrlen;
@@ -150,6 +152,10 @@ void * accept_connections(void * args) {
 
     signal(SIGINT, handler);
     int x = 0;
+    int z = 0;
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+        free_pos[i] = TRUE;
+    }
 
     while(!exit_flag) {
         int local_socket;
@@ -161,28 +167,33 @@ void * accept_connections(void * args) {
         }
         
         
-        void * recv_args = malloc(sizeof(int));
-        *(int *) recv_args = local_socket;
+        
+        int i = 0;
+        for (i = 0; i < MAX_CLIENTS; i++) {
+            if (free_pos[i] == TRUE) {
+                free_pos[i] = FALSE;
+                x = i;
+                
+                break;
+            }   
+        }
+        z++;
+        recv_args * recv_args = malloc(sizeof(recv_args));
+        recv_args->socket = local_socket;
+        recv_args->pos = x;
         
         //creamos un hilo por cada conexion que se quedar escchando indefinidadmente
         //sin interrumpir la ejecucion del hilo principal 
         pthread_create(&thread_ids[x], NULL, server_receive, recv_args);
 
-        x++;
-
-        if (x == MAX_CONNECTIONS) {
-            for (int i = 0; i < MAX_CONNECTIONS; i++) {
-                pthread_join(thread_ids[i], NULL);
-                thread_ids[i] = 0;
-            }
-            x = 0;
         
-        }
+
+        
     }
     for (int i = 0; i < x; i++) {
         pthread_join(thread_ids[i], NULL);
     }
-    
+
     free(args);
     
     return 0;  
@@ -193,8 +204,9 @@ void * accept_connections(void * args) {
 void * server_receive(void *arg) {   
     
     //int socket_local = tcp_sockets[client_counter];
-    
-    int socket_local = *(int *) arg;
+    recv_args * args = (recv_args *) arg;
+    int socket_local = args->socket;
+    int pos = args->pos;
     struct timespec clock_time , start_time , current_time;
     
     request * msg = malloc(sizeof(request));
@@ -399,7 +411,8 @@ void * server_receive(void *arg) {
     sem_post(&semaphore);
     free(msg);
     free(arg);
-    return NULL;
+    free_pos[pos] = TRUE;
+    pthread_exit(NULL);
     
 }
 
