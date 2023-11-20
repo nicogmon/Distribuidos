@@ -25,6 +25,9 @@
 #define FALSE 0
 #define TRUE 1
 
+int NANO_MICRO = 1e3;
+int SECS_NANO = 1e9;
+int SECS_MILI = 1e3;
 
 unsigned int clock_lamport = 0;
 
@@ -208,7 +211,7 @@ void * server_receive(void *arg) {
     recv_args * args = (recv_args *) arg;
     int socket_local = args->socket;
     int pos = args->pos;
-    struct timespec clock_time , start_time , current_time;
+    struct timespec time_stamp , start_time , current_time;
     
     request * msg = malloc(sizeof(request));
     
@@ -223,8 +226,8 @@ void * server_receive(void *arg) {
     
     response res;
    
-    clock_gettime(CLOCK_REALTIME, &clock_time);
-    double time_stamp = (clock_time.tv_sec + (clock_time.tv_nsec / 1e9));
+    clock_gettime(CLOCK_REALTIME, &time_stamp);
+    
     
     if (server_pryority == WRITER){
         if (msg -> action == WRITE) {
@@ -262,9 +265,9 @@ void * server_receive(void *arg) {
                 return NULL;
             }
             
-            printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
+            printf("[%ld.%ld][ESCRITOR %d] modifica contador con valor %d\n",time_stamp.tv_sec, time_stamp.tv_nsec / NANO_MICRO  , msg->id, counter);
             res.counter = counter;
-            usleep(rand_sleep_ms * 1000);
+            usleep(rand_sleep_ms * SECS_MILI);
             //printf("%d\n", rand_sleep_ms * 1000);
         
             n_writers--;
@@ -293,7 +296,8 @@ void * server_receive(void *arg) {
             
             clock_gettime(CLOCK_MONOTONIC, &current_time);
             res.counter = counter;
-            printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
+            printf("[%ld.%ld][LECTOR %d] lee contador con valor %d\n", time_stamp.tv_sec, time_stamp.tv_nsec , msg->id, counter);
+            
             usleep(rand_sleep_ms * 1000);
             pthread_mutex_lock(&mutex);
             n_readers--;
@@ -303,11 +307,11 @@ void * server_receive(void *arg) {
             pthread_mutex_unlock(&mutex);
         }
 
-        double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
+        double elapsed = (current_time.tv_sec * SECS_NANO  + current_time.tv_nsec ) - (start_time.tv_sec * SECS_NANO +  start_time.tv_nsec );
 
         res.action = msg->action;
 
-        res.latency_time = elapsed * 1e9;
+        res.latency_time = elapsed;
         if (send(socket_local, &res, sizeof(response), 0) < 0) {
             perror("send");
             sem_post(&semaphore);
@@ -351,9 +355,9 @@ void * server_receive(void *arg) {
                 return NULL;
             }
             
-            printf("[%f][ESCRITOR %d] modifica contador con valor %d\n",time_stamp , msg->id, counter);
+            printf("[%ld.%ld][ESCRITOR %d] modifica contador con valor %d\n",time_stamp.tv_sec, time_stamp.tv_nsec / NANO_MICRO  , msg->id, counter);
             res.counter = counter;
-            usleep(rand_sleep_ms * 1000);
+            usleep(rand_sleep_ms * SECS_MILI);
             //printf("%d\n", rand_sleep_ms * 1000);
         
             n_writers--;
@@ -385,7 +389,7 @@ void * server_receive(void *arg) {
             
             clock_gettime(CLOCK_MONOTONIC, &current_time);
             res.counter = counter;
-            printf("[%f][LECTOR %d] lee contador con valor %d\n",time_stamp , msg->id, counter);
+            printf("[%ld.%ld][LECTOR %d] lee contador con valor %d\n", time_stamp.tv_sec, time_stamp.tv_nsec , msg->id, counter);
             usleep(rand_sleep_ms * 1000);
             pthread_mutex_lock(&mutex);
             n_readers--;
@@ -395,11 +399,11 @@ void * server_receive(void *arg) {
             pthread_mutex_unlock(&mutex);
         }
 
-        double elapsed = (current_time.tv_sec  + (current_time.tv_nsec / 1e9)) - (start_time.tv_sec +  (start_time.tv_nsec / 1e9));
+        double elapsed = (current_time.tv_sec * SECS_NANO  + current_time.tv_nsec ) - (start_time.tv_sec * SECS_NANO +  start_time.tv_nsec );
 
         res.action = msg->action;
 
-        res.latency_time = elapsed * 1e9;
+        res.latency_time = elapsed;
         if (send(socket_local, &res, sizeof(response), 0) < 0) {
             perror("send");
             sem_post(&semaphore);
