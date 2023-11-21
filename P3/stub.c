@@ -185,6 +185,8 @@ void * accept_connections(void * args) {
         recv_args * recv_Args = malloc(sizeof(recv_args));
         recv_Args->socket = local_socket;
         recv_Args->pos = x;
+
+        sem_wait(&semaphore);
         
         //creamos un hilo por cada conexion que se quedar escchando indefinidadmente
         //sin interrumpir la ejecucion del hilo principal 
@@ -215,7 +217,7 @@ void * server_receive(void *arg) {
     
     request * msg = malloc(sizeof(request));
     
-    sem_wait(&semaphore);
+    
     
     if (recv(socket_local, msg, sizeof(request), 0) <= 0) {
         perror("recv");
