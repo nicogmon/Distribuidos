@@ -1,0 +1,8 @@
+Subscriber conectado con broker 
+Registrado correctamente con ID: 7 para topic motor
+[1702650650.469838050] Recibido mensaje topic: motor - mensaje: hola - Generó: 1702650650.469304 - Recibido: 1702650650.469838 - Latencia: 0.469838 
+[1702650652.111247291] Recibido mensaje topic: motor - mensaje: adios - Generó: 1702650652.110979 - Recibido: 1702650652.111247 - Latencia: 0.111247 
+[1702650657.195424360] Recibido mensaje topic: motor - mensaje: hasta - Generó: 1702650657.195233 - Recibido: 1702650657.195425 - Latencia: 0.195425 
+[1702650660.321442070] Recibido mensaje topic: motor - mensaje: luego - Generó: 1702650660.321140 - Recibido: 1702650660.321442 - Latencia: 0.321442 
+[1702650684.16904573] Recibido mensaje topic: motor - mensaje: adios - Generó: 1702650684.016738 - Recibido: 1702650684.016905 - Latencia: 0.016905 
+De-registrado 7 correctamente del broker

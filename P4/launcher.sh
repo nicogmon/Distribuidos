@@ -1,12 +1,14 @@
 #!/bin/bash
 
-for i in {1..10}
+
+for i in {1..50}
 do
 	if [ -e "info$i.txt" ]; then
         rm "info$i.txt"
     fi
 
-  ./subscriber --ip 10.1.151.117 --port 1234 --topic motor  >> "info$i.txt" &
+  ./subscriber --ip 192.168.1.31 --port 1234 --topic motor  >> "E1_0/info$i.txt" &
+  sleep 0.5
 done
 wait
 
