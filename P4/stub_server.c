@@ -230,6 +230,7 @@ void * server_receive(void *arg) {
             exit(EXIT_FAILURE);
         }
         free(res);
+        
     }
     else if (msg->action == UNREGISTER_PUBLISHER){
         int id = unregister_publisher(msg->id);
@@ -266,7 +267,8 @@ void * server_receive(void *arg) {
             pthread_mutex_unlock(&mutex);
         }
         res->id = id;
-        printf("n_subscribers %d y id  %d\n", n_subscribers, res->id);
+        printf("n_subscribers %d, id de nuevo sub %d  y fd   %d\n", n_subscribers, res->id, socket_local);
+
 
         if (send(socket_local, res, sizeof(response), 0) < 0) {
             perror("send");
@@ -312,6 +314,7 @@ void * server_receive(void *arg) {
                 break;
             }
         }
+
         pthread_mutex_unlock(&mutex);
         printf("publish data despues de mmutex\n");
         pthread_mutex_lock(&mutex_sub);
@@ -319,10 +322,13 @@ void * server_receive(void *arg) {
             if (subscribers_topics[j][i] == NULL) {
                 break;
             }
+            printf("subscribers_topics[j][i]->id %d\n", subscribers_topics[j][i]->id);
+            printf("fd de socket %d\n", subscribers_topics[j][i]->socket);
             
             send_counter++;
         
         }
+
         pthread_mutex_unlock(&mutex_sub);
 
         if (broker_mode == SEQ) {
@@ -347,6 +353,7 @@ void * server_receive(void *arg) {
                     break;
                 }
                 printf("publico a id %d\n", subscribers_topics[j][i]->id);
+                printf("fd de socket %d\n", subscribers_topics[j][i]->socket);
                 publish * pub = malloc(sizeof(publish));
                 pub->time_generated_data = msg->data.time_generated_data;
                 strcpy(pub->data, msg->data.data);
@@ -463,6 +470,7 @@ int register_publisher(message * msg, int socket) {
 
             if (j == MAX_TOPICS) {
                 printf("No hay espacio para mas topics\n");
+                pthread_mutex_unlock(&mutex_pub);
                 return -1;
             }
             
@@ -477,8 +485,10 @@ int register_publisher(message * msg, int socket) {
     printf("\n");
     if (i == MAX_PUBLISHERS) {
         printf("No hay espacio para mas publishers\n");
+        pthread_mutex_unlock(&mutex_pub);
         return -1;
     }
+    pthread_mutex_unlock(&mutex_pub);
     return i;
 }
 
@@ -534,10 +544,12 @@ int register_subscriber(message * msg, int socket) {
 
 int unregister_publisher(int id) {
     int i = 0;
+    printf("estoy en el unregister antes de mutex_pub\n");
     pthread_mutex_lock(&mutex_pub);
     for(i = 0; i < MAX_PUBLISHERS; i++) {
         if (publishers[i] != NULL && publishers[i]->id == id) {
             //int id = publishers[i]->id;
+            printf("estoy en el unregister antes de mutex general\n");
             pthread_mutex_lock(&mutex);
             for (int j = 0; j < MAX_TOPICS; j++) {
 
@@ -551,6 +563,7 @@ int unregister_publisher(int id) {
                     break;   
                 }
             }
+            printf("estoy en el unregister despues de mutex general y voy a desbloquearlo\n");
             pthread_mutex_unlock(&mutex);
             //printf ("hemos encontrado el publisher\n");
             

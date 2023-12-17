@@ -7,7 +7,7 @@ do
         rm "info$i.txt"
     fi
 
-  ./subscriber --ip 192.168.1.31 --port 1234 --topic motor  >> "E1_0/info$i.txt" &
+  ./subscriber --ip 192.168.1.178 --port 1234 --topic motor  >> "E1_0/info$i.txt" &
   sleep 0.5
 done
 wait

@@ -114,7 +114,7 @@ int client_publish(char * data) {
 
     publish * pub = malloc(sizeof(publish));
     struct timespec time;
-    clock_gettime(CLOCK_REALTIME, &time);
+    clock_gettime(CLOCK_MONOTONIC, &time);
     long double time_in_seconds = time.tv_sec + (time.tv_nsec / (long double) SECS_NANO);
     pub->time_generated_data = time;
     strcpy(pub->data, data);
@@ -177,17 +177,25 @@ int subscriber_recieve(void * args) {
 
     
     publish * pub = malloc(sizeof(publish));
-    if (recv(tcp_socket, pub, sizeof(publish), 0) < 0) {
-        perror("recv");
-        return -1;
+    int bytes_read = 0;
+    bytes_read = recv(tcp_socket, pub, sizeof(publish), MSG_DONTWAIT);
+    while (bytes_read < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            bytes_read = recv(tcp_socket, pub, sizeof(publish), MSG_DONTWAIT);
+            
+        } else {
+            perror("recv");
+            return -1;
+        }
+        usleep(1);
     }
     struct timespec time;
-    clock_gettime(CLOCK_REALTIME, &time);
+    clock_gettime(CLOCK_MONOTONIC, &time);
     
     
     long double time_in_seconds = get_time();   
     long double time_generated = pub->time_generated_data.tv_sec + (pub->time_generated_data.tv_nsec / (long double) SECS_NANO);
-    long double latency = time_in_seconds - pub->time_generated_data.tv_sec;
+    long double latency = time_in_seconds - time_generated;
     
     printf("[%ld.%ld] Recibido mensaje topic: %s - mensaje: %s - Generó: %LF - Recibido: %LF - Latencia: %0.6LF \n",
             time.tv_sec, time.tv_nsec, topic, pub->data,time_generated, time_in_seconds, latency );
@@ -200,7 +208,7 @@ int subscriber_recieve(void * args) {
 
 long double get_time() {
     struct timespec time;
-    clock_gettime(CLOCK_REALTIME, &time);
+    clock_gettime(CLOCK_MONOTONIC, &time);
     long double time_in_seconds = time.tv_sec + (time.tv_nsec / (long double) SECS_NANO);
     return time_in_seconds;
 }

@@ -68,12 +68,24 @@ int main(int argc, char *argv[]) {
         printf("Error al registrarse\n");
         exit(EXIT_FAILURE);
     }
-    while (!exit_flag) {
+    char buffer[100];
+    
+    sleep(30);
+    for (int i = 0; i < 1; i++) {
+        FILE  * file = fopen ("/proc/loadavg", "r");
+        if (file == NULL) {
+            perror("Error opening file");
+            exit(EXIT_FAILURE);
+        }
+        if (fgets(buffer, sizeof(buffer), file) != NULL) {
+            client_publish(buffer);
+        }
+        fclose(file);
         
-        char data[100];
-        scanf("%s", data);
-        client_publish(data);
+        sleep(5);
     }
 
     status = unregister_pub_sub(UNREGISTER_PUBLISHER);
+
+    exit(EXIT_SUCCESS);
 }
