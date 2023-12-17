@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-for i in {1..50}
+for i in {1..500}
 do
 	if [ -e "E1_0/info$i.txt" ]; then
         rm "E1_0/info$i.txt"

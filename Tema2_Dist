@@ -1,0 +1,147 @@
+Tema 2: Comunicacion entre procesos distribuidos
+
+	Comunicacion entre procesos:
+		espacios de memorias compartidos variables buffers etc o con paso de mensajes, pipes colas etc.
+		En sistemas distribuidos la comunicacion se distibuye entre los nodos 
+		
+		Process/threads/forks
+		
+		Forks cuando necesitamos procesos paralelos, copia memoria del padre pero despues trabaja independientemente, costoso cambio de contexto, condiciones de carrera.
+		
+		Thread no hace copia de memoria del padre, comparte la memoria e interactua con el proceso padre.
+		Mucho mas liviano, pero si problemas de concurrencia.
+		
+		Un thread necesiata un proceso padre para ser creado.
+		
+		Cambio de contexto entre procesos es mas pesado que entre threads 
+		
+		Acordarme del join en threads 
+		
+		No queremos espera activa, consume la cpu para eso utilizamos los join, que bloquea el proceso padre hasta que acaben los hijos.
+		
+		
+		Arquitecturas de comunicacion 
+			Cliente/Servidor: servidor siempre escuchando cliente pide y se comunican
+			
+			Editor/Subscriptor: asincrono, el subscriptor no espera a que le manden informacion, no sabes cuando va a llegar la info, manejo de eventos 
+			
+			Peer to Peer: arquitectur descentralizada, topologia indefinida puede cambiar la conexion de nodos.
+		
+		Comunicacion sincrona/asincrona
+			sincrona se espera activamente hasta obtener un resultado
+			Asincrona se realiza la comunicacion y se espera haciendo otras tareas
+			
+			
+	Comunicacion entre procesos distribuidos:
+		Paso de mensajes:
+			Es una capa sobre el protocolo de transporte 
+			Alto nivel de encapsulamiento y distribución
+			No comparten memorias fisicas 
+			Mantienen coherencia y sincronizacion entre los procesos dist.
+			No nos importa el protocolo de comunicacion udp/tcp
+			Comunicacion mediante primitivas, send() y receive()
+			
+		Send envia mensaje por un canal que llega al receive.(ejemplo basico)
+		
+		Carcateristicas paso de mensajes
+			Sincronizacion: sincrona o asincrona
+			
+			Identificacion: directa/inidirecta simetrica/asimetrica
+			
+			caract. Canal: capacidad, uni/bidireccional
+			
+			Gestion de fallos 
+			
+			
+		Comunicacion:
+			directa: Debe nombrase explicitamente el remitente, send(P, mensaje) receive(Q, mensaje).
+								Los procesos se conocen previamente, unico enlace de comunicacion.
+								
+			Indirecta: Los mensajes se envian y reciben de buzones  send(A, mensaje) receive(A, mensaje).
+								 Permite comunicacion uno a uno, uno a muchos, etc...
+								 2 o mas procesos puede utilizar el buzon.
+								 Esquema muchos a uno se conocen como puertos.
+			
+			Simetrica: Receptor y emisor necesitan nombrarse mutuamente,  send(P, mensaje) receive(Q, mensaje).
+			
+			Asimetrica: Solo el emisor nombra al destinatario,  send(P, mensaje) receive(id, mensaje).
+									el receive no necesita saber que proceso le manda.
+									
+			
+			Tipos de llamadas:
+				Bloqueantes: se bloquea la comunicacion entre emisor y receptor hasta que se acaba la comunicacion, no devuelve el control, comunicación sincrona.
+				No bloqueantes:: no bloquea al componente que la solicita, emisor delega el envio a subcomponente y sigue con su ejecucion. Receptor si recibe lee si no notifica que no hay nada sin bloquearse.
+				
+				Interesa uno o otro dependiendo de la utilidad de tu aplicacion
+									
+		Canal:
+		
+			Unidireccional: info siempre en el mismo sentido, radio/Tele
+			
+			Bidireccional: info fluye en ambos sentidos, conversion telefónica,chat.
+			
+			Caracteristicas del Canal:
+				Flujo de datos: enlaces unidirecciones o bidireccionales 
+				
+				Capacidad: cero, limitada, infinita(teorica) depende de la memoria 
+				
+				Tamaño de los mensajes: long fija o variable 		
+				
+				Con tipo o sin tipo: tipo de datos que se manda subscriber de ros depende a que te suscribas recibes un solo tipo de datos 
+				
+				Paso por copia o por referencia.	
+				
+		Mensajes:
+			
+			Se debe conocer la codificacion del mensaje para su correcta interpretación, ordenacion de bytes, formatos de texto, etc...
+			
+			Errores:
+				> Prob de error en transmisiones entre procesos distribuidos
+				Mensajes perdidos entre procesos que se comunican por un canal
+				Datos alterados por ruido 
+				Bloqueos en emisor o receptor
+				gestion de fallos y recuperacion en sist.Distribuidos se cae en el ambito de Sistemas Tolerantes a Fallos
+				
+				
+		Marshalling:
+			Importante para multiplataforma 
+			Transformacion de la representacion de datos a un formato que permita su trasmision o almacenamiento
+			Muy usado en comunicacion distribuida, tranparencia de acceso, los procesos pueden correr en diferentes arquitecturas con diferente representacion de los datos.
+			
+		Comunicación entre procesos:
+		
+			Sockets,RPC y RMI
+			
+			Sockets:
+				Comunicacionentre procesos dist. de bajo nivel
+				Saber detalles de la red y comunicaciones
+				Control completo de las comunicaciones 
+				Dificil extension para nuevas arquitecturas
+			
+			RPC(Remote Procedure Call):
+				Permite realizar llamadas a funciones localizadas en otra máquina.
+				Se encapsula toda la programación de red comunicaciones.
+				Transparencia de acceso
+				Complejidad se encapsula en componentes denominados stub 
+				Permite modular lógica del sistema dist.
+				Escalabilidad
+				
+			RMI(Remote Method Invocation):
+				Paradigma de orientación a objetos aplicado a comunicación distribuida.
+				Permite modificar el estado de objetos localizados remotamente.
+				Separación clara entre interfaces de comunicación y objetos.
+				El stub del cliente se denomina proxy
+			  El stub del servidor se denomina skeleton
+				Ofrece también modularización y escalabilidad
+				
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			

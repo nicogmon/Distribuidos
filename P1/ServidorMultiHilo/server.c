@@ -87,8 +87,6 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    //printf("El valor entero es: %ld\n", port);
-
 	setbuf(stdout, NULL);
 
 	struct sockaddr_in server_addr;

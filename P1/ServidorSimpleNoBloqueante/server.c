@@ -39,7 +39,6 @@ main(int argc, char *argv[])
     int addrlen = sizeof(server_addr);
 
     char buffer[1024] = { 0 };
-    char* hello = "Hello client";
     char *path = (char *)malloc(sizeof(char) * 1024);
 
     int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);

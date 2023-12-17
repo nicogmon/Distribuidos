@@ -36,8 +36,8 @@ main(int argc, char *argv[])
     int addrlen = sizeof(server_addr);
 
     char buffer[1024] = { 0 };
-    char* hello = "Hello client";
-    char *path = (char *)malloc(sizeof(char) * 100);
+    
+    char *msg = (char *)malloc(sizeof(char) * 100);
 
     int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
     int new_socket;
@@ -74,14 +74,14 @@ main(int argc, char *argv[])
     if (rec > 0) {
         printf("+++%s\n", buffer);
         printf(">");
-        while (fgets(path, 100, stdin) != NULL) {
+        while (fgets(msg, 100, stdin) != NULL) {
             if (sig_c == 1) {
                 printf("Cerrando cliente...\n");
                 close(tcp_socket);
-                free(path);
+                free(msg);
                 exit(EXIT_SUCCESS);
             }
-            if (send(new_socket, path, strlen(path), 0) < 0) {
+            if (send(new_socket, msg, strlen(msg), 0) < 0) {
                 perror("send");
                 exit(EXIT_FAILURE);
             }

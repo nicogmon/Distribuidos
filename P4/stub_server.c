@@ -515,6 +515,13 @@ int register_subscriber(message * msg, int socket) {
     
     for (j = 0; j < MAX_TOPICS; j++) {   
         //printf("topic %s\n", topics[j]); 
+        pthread_mutex_lock(&mutex);
+        if (topics[j] == NULL) {
+            topics[j] = malloc(sizeof(char) * 100);
+            strcpy(topics[j], msg->topic);
+            n_topics++;
+        }
+        pthread_mutex_unlock(&mutex);
         if (topics[j] != NULL && strcmp(topics[j],sub->topic) == 0) {
             for(i = 0; i < MAX_SUBSCRIBERS; i++) {
                 if (subscribers_topics[j][i] == NULL) {
@@ -533,10 +540,7 @@ int register_subscriber(message * msg, int socket) {
         }
     }
     pthread_mutex_unlock(&mutex_sub);
-    if (j == MAX_TOPICS) {
-        printf("topic deseado no existe\n");
-        return -1;
-    }
+    
     //printf("subscriber_topcs[j][i]->id en register%d\n",subscribers_topics[j][i-1]->id);
     return sub->id;
 }

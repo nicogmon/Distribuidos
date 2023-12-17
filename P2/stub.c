@@ -87,6 +87,8 @@ int init_Server(long port) {
     threadArgs  * args = (threadArgs *) malloc(sizeof(threadArgs));
     args->server_addr = &server_addr;
     args->addrlen = &addrlen;
+    printf("addr -> %d\n", server_addr.sin_port);
+    printf("addr port-> %d\n", args->server_addr->sin_port);
     //creamos un hlo que se encarge de aceptar las conexiones para poder volver al programa principal
     pthread_create(&thread_id, NULL, accept_connections, (void *) args);
     threads_not_collected[nthreads_not_collected] = thread_id;
@@ -102,7 +104,7 @@ void * accept_connections(void * args) {
     threadArgs * arguments =(threadArgs *) args;
     struct sockaddr_in * server_addr = arguments->server_addr;
     int * addrlen = arguments->addrlen;
-        
+    printf("addr port-< %d\n", arguments->server_addr->sin_port);
     for (int i = 0; i < MAX_CLIENTS; i++){
         if ((tcp_sockets[i] = accept(tcp_socket, (struct sockaddr *)server_addr,
          (socklen_t *)addrlen)) < 0) {

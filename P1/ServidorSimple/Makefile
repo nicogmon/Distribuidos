@@ -7,8 +7,8 @@ DEPS =
 
 all: server client
 
-server: server_bind_corregido.c 
-	gcc -g -Wall -o server server_bind_corregido.c
+server: server.c 
+	gcc -g -Wall -o server server.c
 
 client: client.c 
 	gcc -g -Wall -o client client.c

@@ -34,7 +34,6 @@ main(int argc, char *argv[])
     signal(SIGINT, handler);
 
     char buffer[1024] = { 0 };
-    char* hello = "Hello server";
     char *path = (char *)malloc(sizeof(char) * 1024);
     char ip[INET_ADDRSTRLEN];
 

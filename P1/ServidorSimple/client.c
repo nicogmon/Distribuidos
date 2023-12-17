@@ -51,8 +51,7 @@ main(int argc, char *argv[])
     int addrlen = sizeof(server_addr);
 
     char buffer[1024] = { 0 };
-    char* hello = "Hello server";
-    char *path = (char *)malloc(sizeof(char) * 100);
+    char *msg = (char *)malloc(sizeof(char) * 100);
 
     int tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (tcp_socket < 0) {
@@ -67,14 +66,14 @@ main(int argc, char *argv[])
     }
 
     printf(">");
-    while (fgets(path, 100, stdin) != NULL) {
+    while (fgets(msg, 100, stdin) != NULL) {
              if (sig_c == 1) {
                 printf("Cerrando servidor...\n");
                 close(tcp_socket);
-                free(path);
+                free(msg);
                 exit(EXIT_SUCCESS);
             }
-            if (send(tcp_socket, path, strlen(path), 0) < 0) {
+            if (send(tcp_socket, msg, strlen(msg), 0) < 0) {
             perror("send");
             exit(EXIT_FAILURE);
             }

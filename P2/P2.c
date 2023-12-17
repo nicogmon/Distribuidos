@@ -30,6 +30,8 @@ main(int argc, char *argv[])
     
     while (get_clock_lamport() < 3)
     {
+        //sleep de 500 microsegundos para evitar usar el 100% de la CPU
+        //pero mantener una espera activa para poder actualizar el clock
         usleep(500);
         continue; 
     }

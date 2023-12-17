@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     }
     char buffer[100];
     
-    sleep(40);
+    sleep(2);
     for (int i = 0; i < 100; i++) {
         FILE  * file = fopen ("/proc/loadavg", "r");
         if (file == NULL) {

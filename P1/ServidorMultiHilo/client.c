@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <signal.h>
 
-#define PORT 6000
+
 
 int exit_flag = 0;
 
