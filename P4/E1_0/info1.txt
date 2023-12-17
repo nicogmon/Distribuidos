@@ -1,3 +1,0 @@
-Subscriber conectado con broker 
-Registrado correctamente con ID: 1 para topic motor
-De-registrado 1 correctamente del broker
