@@ -207,10 +207,10 @@ void * server_receive(void *arg) {
         exit(EXIT_FAILURE);
     }
     
-    printf("action %d\n", msg->action);
+    fprintf(stderr, "action %d\n", msg->action);
     
     refresh_topics();
-    printf("despues de refresh\n");
+    //printf("despues de refresh\n");
 
     if (msg->action == REGISTER_PUBLISHER){
         int id = register_publisher(msg, socket_local);
@@ -277,6 +277,7 @@ void * server_receive(void *arg) {
         free(res);
     }
     else if (msg->action == UNREGISTER_SUBSCRIBER){
+        pthread_mutex_lock(&mutex);
         printf("msg->id %d\n", msg->id);
         int id = unregister_subscriber(msg->id);
         response * res = malloc(sizeof(response));
@@ -295,14 +296,11 @@ void * server_receive(void *arg) {
         }
         free(res);
         
-        for (int i = 0; i < MAX_SUBSCRIBERS; i++) {
-            if (subscribers[i] != NULL) {
-                printf("subscribers[i]->id %d\n", subscribers[i]->id);
-
-            }
-        }
         
         close(socket_local);
+        
+        pthread_mutex_unlock(&mutex);
+        fprintf(stderr,"-------------------MUTEX---SOLTADO----------------- \n");
         pthread_exit(NULL);
     }
     else if (msg->action == PUBLISH_DATA){
@@ -363,7 +361,9 @@ void * server_receive(void *arg) {
                     exit(EXIT_FAILURE);
                 }
                 free(pub);
+                usleep(1);
                 }
+                
             pthread_mutex_unlock(&mutex_sub);
         }
         else if (broker_mode == PARALLEL) {
@@ -495,9 +495,9 @@ int register_publisher(message * msg, int socket) {
 int register_subscriber(message * msg, int socket) {
     int i = 0;
     int j = 0;
-    subscriber * sub = malloc(sizeof(subscriber));
     
     pthread_mutex_lock(&mutex_sub);
+    subscriber * sub = malloc(sizeof(subscriber));
     for (int k = 0; k < MAX_SUBSCRIBERS; k++) {
         if (subscribers[k] == NULL) {
             sub->id = k + 1;
@@ -584,8 +584,9 @@ int unregister_subscriber(int id) {
     int j = 0;
     int k = 0;
     
-    //printf("id %d\n", id);
-    pthread_mutex_lock(&mutex_sub);
+    
+    //pthread_mutex_lock(&mutex);
+    fprintf(stderr,"-------------------UNREGISTER------------------ \n");
     for(i = 0; i < MAX_SUBSCRIBERS; i++) {
         if (subscribers[i] != NULL && subscribers[i]->id == id) {break;}   
     } 
@@ -594,13 +595,13 @@ int unregister_subscriber(int id) {
         printf("No existe el subscriber con id %d\n", id);
         return -1;
     }
-    pthread_mutex_lock(&mutex);
+    //pthread_mutex_lock(&mutex);
     for (j = 0; j < MAX_TOPICS; j++) {   
         if (strcmp(subscribers[i]->topic, topics[j]) == 0) {
             break;
         }
     }    
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
     if (j == MAX_TOPICS - 1) {
         printf("No existe el topic %s\n", subscribers[i]->topic);
         return -1;
@@ -639,14 +640,18 @@ int unregister_subscriber(int id) {
         }
         
     }
-    pthread_mutex_unlock(&mutex_sub);
-    //printf("he actualizo la lista\n");
     for (int x = 0; x < MAX_SUBSCRIBERS; x++) {
         if (subscribers_topics[j][x] != NULL) {
-            printf("subscribers_topics[j][k]->id %d\n", subscribers_topics[j][x]->id);
+            fprintf(stderr, "subscribers_topics[j][k]->id %d\n", subscribers_topics[j][x]->id);
 
         }
+        else {
+            break;
+        }
     }
+    fprintf(stderr,"-------------------UNREGISTER---ACABADO----------------- \n");
+    //pthread_mutex_unlock(&mutex);
+   
     //printf("lista actualizada\n");
     return id;
 }
@@ -671,9 +676,9 @@ void * send_publish(void * arg) {
 }
 
 void refresh_topics() {
-    printf("refresh_topics\n");
+    //printf("refresh_topics\n");
     pthread_mutex_lock(&mutex);
-    printf("rt mutex\n");
+    //printf("rt mutex\n");
     for (int i = 0; i < MAX_TOPICS; i++) {
         //printf("publisher_topic %d\n", publishers_topics[i] );
         if(topics[i] == NULL) {

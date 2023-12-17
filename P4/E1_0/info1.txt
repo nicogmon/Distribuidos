@@ -1,4 +1,3 @@
-
+Subscriber conectado con broker 
 Registrado correctamente con ID: 1 para topic motor
-[52060.78355339] Recibido mensaje topic: motor - mensaje: 0.84 0.99 0.73 4/1657 61598
- - Generó: 52060.078058 - Recibido: 52060.078356 - Latencia: 0.000298 
+De-registrado 1 correctamente del broker

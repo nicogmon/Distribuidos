@@ -21,7 +21,7 @@ void handler(int number)
 int main(int argc, char *argv[]) {
     setbuf(stdout, NULL);
     signal(SIGINT, handler);
-    char ip[12];
+    char ip[20];
     long port = 0;
     char *topic;
 

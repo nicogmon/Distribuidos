@@ -1,26 +1,5 @@
 Subscriber conectado con broker 
-Registrado correctamente con ID: 9 para topic motor
-Subscriber conectado con broker 
-Registrado correctamente con ID: 9 para topic motor
-[41731.572538111] Recibido mensaje topic: motor - mensaje: 1.47 1.40 1.31 2/1584 51151
- - Generó: 41731.571988 - Recibido: 41731.572538 - Latencia: 0.000550 
-[41736.572586475] Recibido mensaje topic: motor - mensaje: 1.51 1.41 1.31 4/1603 51181
- - Generó: 41736.572185 - Recibido: 41736.572587 - Latencia: 0.000401 
-[41741.572789047] Recibido mensaje topic: motor - mensaje: 1.55 1.42 1.32 2/1623 51211
- - Generó: 41741.572406 - Recibido: 41741.572789 - Latencia: 0.000383 
-[41746.573125372] Recibido mensaje topic: motor - mensaje: 1.42 1.40 1.31 3/1643 51241
- - Generó: 41746.572598 - Recibido: 41746.573126 - Latencia: 0.000527 
-[41751.573349148] Recibido mensaje topic: motor - mensaje: 1.39 1.39 1.31 1/1662 51269
- - Generó: 41751.572887 - Recibido: 41751.573349 - Latencia: 0.000462 
-[41756.573631809] Recibido mensaje topic: motor - mensaje: 1.36 1.38 1.31 2/1661 51269
- - Generó: 41756.573239 - Recibido: 41756.573632 - Latencia: 0.000393 
-[41761.574045724] Recibido mensaje topic: motor - mensaje: 1.33 1.38 1.30 2/1663 51275
- - Generó: 41761.573567 - Recibido: 41761.574046 - Latencia: 0.000479 
-Subscriber conectado con broker 
-Registrado correctamente con ID: 9 para topic motor
-[51832.695102234] Recibido mensaje topic: motor - mensaje: 0.99 1.07 0.69 1/1628 61322
- - Generó: 51832.694639 - Recibido: 51832.695103 - Latencia: 0.000463 
-Subscriber conectado con broker 
-Registrado correctamente con ID: 9 para topic motor
-[52060.78412439] Recibido mensaje topic: motor - mensaje: 0.84 0.99 0.73 4/1657 61598
- - Generó: 52060.078058 - Recibido: 52060.078413 - Latencia: 0.000355 
+Registrado correctamente con ID: 13 para topic motor
+[81650.110443996] Recibido mensaje topic: motor - mensaje: 1.69 1.31 1.31 4/1730 85501
+ - Generó: 81650.110149 - Recibido: 81650.110444 - Latencia: 0.000295 
+De-registrado 13 correctamente del broker
