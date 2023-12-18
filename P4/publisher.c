@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     char buffer[100];
     
     sleep(2);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         FILE  * file = fopen ("/proc/loadavg", "r");
         if (file == NULL) {
             perror("Error opening file");
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         }
         fclose(file);
         
-        usleep(100000);
+        usleep(1000000);
     }
 
     status = unregister_pub_sub(UNREGISTER_PUBLISHER);

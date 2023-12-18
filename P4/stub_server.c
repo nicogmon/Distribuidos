@@ -196,16 +196,27 @@ void * server_receive(void *arg) {
     recv_args * args = (recv_args *) arg;
     int socket_local = args->socket;
     int send_counter = 0;
+    int bytes_read = 0;
     //int pos = args->pos;
     while(!exit_flag) {
         //printf("esperando mensaje\n"
     message * msg = malloc(sizeof(message));
 
 
-    if (recv(socket_local, msg , sizeof(message), 0) == -1) {//comprobar si recibo 0 bytes
+    bytes_read = recv(socket_local, msg , sizeof(message), 0);
+        
+    
+    if (bytes_read == -1){
         perror("recv");
         exit(EXIT_FAILURE);
     }
+    if (bytes_read == 0) {
+        printf("cliente desconectado\n");
+        close(socket_local);
+        
+    }
+
+
     
     fprintf(stderr, "action %d\n", msg->action);
     
@@ -217,6 +228,7 @@ void * server_receive(void *arg) {
         response * res = malloc(sizeof(response));
         if (id == -1) {
             res->response_status = LIMIT;
+            res->id = -1;
         } else {
             res->response_status = OK;
             res->id = id;
@@ -229,6 +241,11 @@ void * server_receive(void *arg) {
             perror("send");
             exit(EXIT_FAILURE);
         }
+        if (res->response_status == LIMIT) {
+            close(socket_local);
+            pthread_exit(NULL);
+        }
+
         free(res);
         
     }
@@ -273,6 +290,10 @@ void * server_receive(void *arg) {
         if (send(socket_local, res, sizeof(response), 0) < 0) {
             perror("send");
             exit(EXIT_FAILURE);
+        }
+        if (res->response_status == LIMIT) {
+            close(socket_local);
+            pthread_exit(NULL);
         }
         free(res);
     }
@@ -530,7 +551,7 @@ int register_subscriber(message * msg, int socket) {
                     break;
                 }
             }
-            i++;
+            
             if (i == MAX_SUBSCRIBERS) {
                 printf("No hay espacio para mas subscribers en este topic\n");
                 pthread_mutex_unlock(&mutex_sub);
@@ -595,7 +616,7 @@ int unregister_subscriber(int id) {
         if (subscribers[i] != NULL && subscribers[i]->id == id) {break;}   
     } 
     
-    if (i == MAX_SUBSCRIBERS - 1) {//REVISAR
+    if (i == MAX_SUBSCRIBERS) {//REVISAR
         printf("No existe el subscriber con id %d\n", id);
         return -1;
     }

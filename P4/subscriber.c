@@ -69,8 +69,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    while (!exit_flag) {
-        subscriber_recieve(NULL);
+    while (!exit_flag && status != -1 ) {
+        status = subscriber_recieve(NULL);
     }
+    printf("Desconectando...\n");
     unregister_pub_sub(UNREGISTER_SUBSCRIBER);
 }

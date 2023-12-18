@@ -99,6 +99,7 @@ int register_pub_sub( char * client_topic) {
     }
     if (res->response_status == ERROR || res->response_status == LIMIT) {
         printf("Error al hacer el registro: error=%s\n", res->response_status == ERROR ? "ERROR" : "LIMIT");
+        close(tcp_socket);
         return -1;
     }
     if (res->response_status == OK) {
@@ -178,17 +179,33 @@ int subscriber_recieve(void * args) {
     
     publish * pub = malloc(sizeof(publish));
     int bytes_read = 0;
-    bytes_read = recv(tcp_socket, pub, sizeof(publish), MSG_DONTWAIT);
-    while (bytes_read < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            bytes_read = recv(tcp_socket, pub, sizeof(publish), MSG_DONTWAIT);
-            
-        } else {
-            perror("recv");
-            return -1;
+
+    fd_set readmask;
+    struct timeval timeout;
+    FD_ZERO(&readmask); // Reset la mascara
+    FD_SET(tcp_socket, &readmask); // Asignamos el nuevo descriptor
+    //FD_SET(STDIN_FILENO, &readmask); // Entrada
+    timeout.tv_sec=1; timeout.tv_usec=500000;
+
+    if (select(tcp_socket+1, &readmask, NULL, NULL, &timeout)==-1)
+               return 0;
+    if (FD_ISSET(tcp_socket, &readmask)){
+        bytes_read = recv(tcp_socket,pub,sizeof(publish), 0);
+        
+        if (bytes_read == 0) {
+        return -1;
         }
-        usleep(1);
+        if(bytes_read < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                perror("recv");
+                return -1;
+            }
+        }
+    
+    }else{
+        return 0;
     }
+    
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC, &time);
     
