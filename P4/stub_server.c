@@ -383,7 +383,7 @@ void * server_receive(void *arg) {
                     exit(EXIT_FAILURE);
                 }
                 free(pub);
-                usleep(1);
+                //usleep(1);
                 }
                 
             pthread_mutex_unlock(&mutex_sub);

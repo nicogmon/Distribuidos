@@ -12,12 +12,13 @@ for folder in "${folders[@]}"; do
         echo $file
         identifier=$(echo "$file" | grep -oP 'info(\d+)' | grep -oP '\d+')
         echo $identifier
-        if [ -e "E1_0/latencia$identifier" ]; then
-            rm "E1_0/latencia$identifier"
+        if [ -e "$folder/latencia$identifier" ]; then
+            rm "$folder/latencia$identifier"
         fi
+
         
         # Obtiene solo los valores de latencia y los imprime
-        grep -oP 'Latencia: \K[\d.]+' "$file" >> "E3_0/latencia$identifier"
+        grep -oP 'Latencia: \K[\d.]+' "$file" >> "$folder/latencia$identifier"
         
     done
 done

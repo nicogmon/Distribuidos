@@ -37,7 +37,7 @@ def calculate_aggregates(data):
         'Std': std_of_stds
     }
 
-def write_aggregates_csv(output_file, aggregates):
+def write_aggregates_csv(output_file, aggregates, mode, N):
     with open(output_file, 'a', newline='') as csvfile:
         fieldnames = ['Mode', 'N', 'Min', 'Max', 'Avg', 'Std']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -46,8 +46,8 @@ def write_aggregates_csv(output_file, aggregates):
 
         # Escribe la fila con los valores agregados
         writer.writerow({
-            'Mode': 2,
-            'N': 50,
+            'Mode': mode,
+            'N': N,
             'Min': aggregates['Min'],
             'Max': aggregates['Max'],
             'Avg': aggregates['Avg'],
@@ -56,21 +56,23 @@ def write_aggregates_csv(output_file, aggregates):
 
 if __name__ == "__main__":
     # Especifica la lista de archivos a procesar
-#for j in range(1,4):
-    #for k in range(3):
-    file_paths = []
-    for i in range(1,51):
-        file_paths.append("E3_0/latencia"+str(i))
-            # Procesa los archivos
-    result_data = process_files(file_paths)
+    NS = [50,500,900]
+    for j in range(1,4):
+        for k in range(3):
+            file_paths = []
+            for i in range(1,51):
+                file_paths.append(f"E{j}_{k}/latencia{i}")
+                
+                    # Procesa los archivos
+            result_data = process_files(file_paths)
 
-    # Calcula los agregados de los resultados
-    aggregates = calculate_aggregates(result_data)
+            # Calcula los agregados de los resultados
+            aggregates = calculate_aggregates(result_data)
 
-    # Especifica el nombre del archivo de salida para los agregados
-    output_aggregates_file = "agregados.csv"
+            # Especifica el nombre del archivo de salida para los agregados
+            output_aggregates_file = "agregados.csv"
 
-    # Escribe los resultados agregados en un archivo CSV con el formato específico
-    write_aggregates_csv(output_aggregates_file, aggregates)
+            # Escribe los resultados agregados en un archivo CSV con el formato específico
+            write_aggregates_csv(output_aggregates_file, aggregates, k, NS[k] )
 
-    print(f"Los resultados agregados han sido guardados en {output_aggregates_file}")
+            print(f"Los resultados agregados han sido guardados en {output_aggregates_file}")
