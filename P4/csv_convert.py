@@ -46,8 +46,8 @@ def write_aggregates_csv(output_file, aggregates):
 
         # Escribe la fila con los valores agregados
         writer.writerow({
-            'Mode': 0,
-            'N': 500,
+            'Mode': 2,
+            'N': 50,
             'Min': aggregates['Min'],
             'Max': aggregates['Max'],
             'Avg': aggregates['Avg'],
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     #for k in range(3):
     file_paths = []
     for i in range(1,51):
-        file_paths.append("E1_0/latencia"+str(i))
+        file_paths.append("E3_0/latencia"+str(i))
             # Procesa los archivos
     result_data = process_files(file_paths)
 
