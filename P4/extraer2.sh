@@ -5,7 +5,7 @@ folders=( $(find . -maxdepth 1 -type d -name 'E*_?' | sort) )
 
 for folder in "${folders[@]}"; do
     echo "Carpeta: $folder"
-    files=(E3_0/info*txt)
+    files=($folder/info*txt)
 
 
     for file in "${files[@]}"; do
