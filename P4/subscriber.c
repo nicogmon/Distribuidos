@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     char *topic;
 
     if (argc < 7) {
-        printf("Usage: %s --port <port> --priority <priority>\n", argv[0]);
+        printf("Usage: ./subscriber --ip $BROKER_IP --port $BROKER_PORT --topic $TOPIC\n");
         exit(EXIT_FAILURE);
     }
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
                     break;
 
                 default:
-                    printf("Usage: %s --ip <ip> --port <port> --topic <topic>\n", argv[0]);
+                    printf("Usage: ./subscriber --ip $BROKER_IP --port $BROKER_PORT --topic $TOPIC\n");
                     exit(EXIT_FAILURE);
             }
     }

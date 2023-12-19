@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     char *mode;
 
     if (argc < 5) {
-        printf("Usage: %s --port <port> --priority <priority>\n", argv[0]);
+        printf("Usage: ./broker --port $BROKER_PORT --mode $MODE\n");
         exit(EXIT_FAILURE);
     }
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
                     break;
 
                 default:
-                    printf("Usage: %s --port <port> --priority <priority>\n", argv[0]);
+                    printf("Usage: ./broker --port $BROKER_PORT --mode $MODE\n");
                     exit(EXIT_FAILURE);
             }
     }

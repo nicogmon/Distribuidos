@@ -82,7 +82,7 @@ int register_pub_sub( char * client_topic) {
     } else if (type == REGISTER_SUBSCRIBER){
         msg->action = REGISTER_SUBSCRIBER;
     } else {
-        printf("Tipo de cliente incorrecto\n");
+        //printf("Tipo de cliente incorrecto\n");
         return -1;
     }
     strcpy(msg->topic, client_topic);
@@ -98,12 +98,12 @@ int register_pub_sub( char * client_topic) {
         return -1;
     }
     if (res->response_status == ERROR || res->response_status == LIMIT) {
-        printf("Error al hacer el registro: error=%s\n", res->response_status == ERROR ? "ERROR" : "LIMIT");
+        printf("Error al hacer el registro: error=%s\n", res->response_status == ERROR ? "ERROR" : "LIMIT");//añadir epoch
         close(tcp_socket);
         return -1;
     }
     if (res->response_status == OK) {
-        printf("Registrado correctamente con ID: %d para topic %s\n", res->id, topic);
+        printf("Registrado correctamente con ID: %d para topic %s\n", res->id, topic);//añadir epoch
     }
     id = res->id;
 
@@ -143,7 +143,7 @@ int unregister_pub_sub(int action) {
     } else if ( action == UNREGISTER_SUBSCRIBER){
         msg->action = UNREGISTER_SUBSCRIBER;
     } else {
-        printf("Tipo de cliente incorrecto\n");
+        //printf("Tipo de cliente incorrecto\n");
         return -1;
     }
     strcpy(msg->topic, topic);
@@ -160,7 +160,7 @@ int unregister_pub_sub(int action) {
         return -1;
     }
     if (res->response_status == ERROR) {
-        printf("Error al hacer el De-registro\n");
+        //printf("Error al hacer el De-registro\n");
         return -1;
     }
     if (res->response_status == OK) {

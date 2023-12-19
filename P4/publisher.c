@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     char *topic;
 
     if (argc < 7) {
-        printf("Usage: %s --port <port> --priority <priority>\n", argv[0]);
+        printf("Usage: ./publisher --ip $BROKER_IP --port $BROKER_PORT --topic $TOPIC\n");
         exit(EXIT_FAILURE);
     }
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
                     break;
 
                 default:
-                    printf("Usage: %s --ip <ip> --port <port> --topic <topic>\n", argv[0]);
+                    printf("Usage: ./publisher --ip $BROKER_IP --port $BROKER_PORT --topic $TOPIC\n");
                     exit(EXIT_FAILURE);
             }
     }
@@ -65,13 +65,13 @@ int main(int argc, char *argv[]) {
     int status = register_pub_sub(topic);
 
     if (status == -1) {
-        printf("Error al registrarse\n");
+        //printf("Error al registrarse\n");
         exit(EXIT_FAILURE);
     }
     char buffer[100];
     
     sleep(2);
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
         FILE  * file = fopen ("/proc/loadavg", "r");
         if (file == NULL) {
             perror("Error opening file");
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         }
         fclose(file);
         
-        usleep(1000000);
+        usleep(100000);
     }
 
     status = unregister_pub_sub(UNREGISTER_PUBLISHER);

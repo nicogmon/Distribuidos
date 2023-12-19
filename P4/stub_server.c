@@ -74,12 +74,13 @@ handler(int number)
 {
 	switch (number) {
 	case SIGINT:
-		fprintf(stderr, "SIGINT received!\n");
+		
+        //fprintf(stderr, "SIGINT received!\n");
 		exit_flag = 1;
 		break;
 	
 	case SIGPIPE:
-		fprintf(stderr, "SIGPIPE received!\n");
+		//fprintf(stderr, "SIGPIPE received!\n");
 		break;
 	}
 }
@@ -211,14 +212,14 @@ void * server_receive(void *arg) {
         exit(EXIT_FAILURE);
     }
     if (bytes_read == 0) {
-        printf("cliente desconectado\n");
+        //printf("cliente desconectado\n");
         close(socket_local);
         
     }
 
 
     
-    fprintf(stderr, "action %d\n", msg->action);
+    //fprintf(stderr, "action %d\n", msg->action);
     
     refresh_topics();
     //printf("despues de refresh\n");
@@ -284,7 +285,7 @@ void * server_receive(void *arg) {
             pthread_mutex_unlock(&mutex);
         }
         res->id = id;
-        printf("n_subscribers %d, id de nuevo sub %d  y fd   %d\n", n_subscribers, res->id, socket_local);
+        //printf("n_subscribers %d, id de nuevo sub %d  y fd   %d\n", n_subscribers, res->id, socket_local);
 
 
         if (send(socket_local, res, sizeof(response), 0) < 0) {
@@ -299,7 +300,7 @@ void * server_receive(void *arg) {
     }
     else if (msg->action == UNREGISTER_SUBSCRIBER){
         pthread_mutex_lock(&mutex);
-        printf("msg->id %d\n", msg->id);
+        //printf("msg->id %d\n", msg->id);
         int id = unregister_subscriber(msg->id);
         response * res = malloc(sizeof(response));
         if (id == -1) {
@@ -321,12 +322,12 @@ void * server_receive(void *arg) {
         close(socket_local);
         
         pthread_mutex_unlock(&mutex);
-        fprintf(stderr,"-------------------MUTEX---SOLTADO----------------- \n");
+        //fprintf(stderr,"-------------------MUTEX---SOLTADO----------------- \n");
         pthread_exit(NULL);
     }
     else if (msg->action == PUBLISH_DATA){
         int j = 0;
-        printf("Nuevo mensaje recibido en topic %s\n", msg->topic);
+        //printf("Nuevo mensaje recibido en topic %s\n", msg->topic);
         pthread_mutex_lock(&mutex);
         for (j = 0; j < MAX_PUBLISHERS; j++) {
             if (topics[j] != NULL && strcmp(topics[j], msg->topic) == 0) {
@@ -335,14 +336,14 @@ void * server_receive(void *arg) {
         }
 
         pthread_mutex_unlock(&mutex);
-        printf("publish data despues de mmutex\n");
+        //printf("publish data despues de mmutex\n");
         pthread_mutex_lock(&mutex_sub);
         for (int i = 0; i < MAX_SUBSCRIBERS; i++) {
             if (subscribers_topics[j][i] == NULL) {
                 break;
             }
-            printf("subscribers_topics[j][i]->id %d\n", subscribers_topics[j][i]->id);
-            printf("fd de socket %d\n", subscribers_topics[j][i]->socket);
+            //printf("subscribers_topics[j][i]->id %d\n", subscribers_topics[j][i]->id);
+            //printf("fd de socket %d\n", subscribers_topics[j][i]->socket);
             
             send_counter++;
         
@@ -362,21 +363,21 @@ void * server_receive(void *arg) {
                     continue;
                     break;
                 }
-                printf("subscribers_topics[j][k]->id %d\n", subscribers_topics[j][k]->id);
+                //printf("subscribers_topics[j][k]->id %d\n", subscribers_topics[j][k]->id);
             
             }*/
             for (int i = 0; i < MAX_SUBSCRIBERS; i++) {
                 
                 if (subscribers_topics[j][i] == NULL) {
-                    printf ("no hay mas subscribers en este topic\n");
+                    //printf ("no hay mas subscribers en este topic\n");
                     break;
                 }
-                printf("publico a id %d\n", subscribers_topics[j][i]->id);
-                printf("fd de socket %d\n", subscribers_topics[j][i]->socket);
+                //printf("publico a id %d\n", subscribers_topics[j][i]->id);
+                //printf("fd de socket %d\n", subscribers_topics[j][i]->socket);
                 publish * pub = malloc(sizeof(publish));
                 pub->time_generated_data = msg->data.time_generated_data;
                 strcpy(pub->data, msg->data.data);
-                //printf("voy a publicar pub->data %s\n", pub->data);
+                ////printf("voy a publicar pub->data %s\n", pub->data);
                 if (send(subscribers_topics[j][i]->socket, pub, sizeof(publish), 0) < 0) {
                     perror("send");
                     exit(EXIT_FAILURE);
@@ -442,7 +443,7 @@ void * server_receive(void *arg) {
         }
     }
     else {
-        printf("Invalid action %d\n", msg->action);
+        //printf("Invalid action %d\n", msg->action);
         exit(EXIT_FAILURE);
     }
     free(msg);
@@ -456,10 +457,10 @@ int register_publisher(message * msg, int socket) {
     int j = 0;
     publisher * pub = malloc(sizeof(publisher));
     if (n_publishers == MAX_PUBLISHERS) {
-        printf("No hay espacio para mas publishers\n");
+        //printf("No hay espacio para mas publishers\n");
         return -1;
     }
-    /*printf("topics al inicio\n");
+    /*//printf("topics al inicio\n");
     for (int k = 0; k < MAX_TOPICS; k++) {
         printf("topic %s\n", topics[k]);
     }*/
@@ -475,10 +476,10 @@ int register_publisher(message * msg, int socket) {
                 
                 if (topics[j] == NULL) {
                     n_topics++;
-                    printf("pub->topic %s\n", pub->topic);
+                    //printf("pub->topic %s\n", pub->topic);
                     topics[j] = malloc(sizeof(char) * 100);
                     strcpy(topics[j], pub->topic);
-                    printf("topic[j] %s\n", topics[j]);
+                    //printf("topic[j] %s\n", topics[j]);
                     publishers_topics[j]++;
                     break;
                 }
@@ -490,12 +491,12 @@ int register_publisher(message * msg, int socket) {
             pthread_mutex_unlock(&mutex);
 
             if (j == MAX_TOPICS) {
-                printf("No hay espacio para mas topics\n");
+                //printf("No hay espacio para mas topics\n");
                 pthread_mutex_unlock(&mutex_pub);
                 return -1;
             }
             
-            printf(" Nuevo cliente (%d) Publicador conectado: %s\n", i, msg->topic);
+            printf(" Nuevo cliente (%d) Publicador conectado: %s\n", i, msg->topic);//añadir epoch
             break;
         }
     }
@@ -503,9 +504,9 @@ int register_publisher(message * msg, int socket) {
     for (int k = 0; k < MAX_TOPICS; k++) {
         printf("topic %s\n", topics[k]);
     }*/
-    printf("\n");
+    //printf("\n");
     if (i == MAX_PUBLISHERS) {
-        printf("No hay espacio para mas publishers\n");
+        //printf("No hay espacio para mas publishers\n");
         pthread_mutex_unlock(&mutex_pub);
         return -1;
     }
@@ -529,7 +530,7 @@ int register_subscriber(message * msg, int socket) {
         }
     } 
     if (n_subscribers == MAX_SUBSCRIBERS) {
-        printf("No hay espacio para mas subscribers\n");
+        //printf("No hay espacio para mas subscribers\n");
         pthread_mutex_unlock(&mutex_sub);
         return -1;
     }
@@ -547,13 +548,13 @@ int register_subscriber(message * msg, int socket) {
             for(i = 0; i < MAX_SUBSCRIBERS; i++) {
                 if (subscribers_topics[j][i] == NULL) {
                     subscribers_topics[j][i] = sub;
-                    printf(" Nuevo cliente (%d) Suscriptor conectado: %s\n", i, msg->topic);
+                    printf(" Nuevo cliente (%d) Suscriptor conectado: %s\n", i, msg->topic);//añadir epoch 
                     break;
                 }
             }
             
             if (i == MAX_SUBSCRIBERS) {
-                printf("No hay espacio para mas subscribers en este topic\n");
+                //printf("No hay espacio para mas subscribers en este topic\n");
                 pthread_mutex_unlock(&mutex_sub);
                 return -1;
             }
@@ -569,12 +570,12 @@ int register_subscriber(message * msg, int socket) {
 
 int unregister_publisher(int id) {
     int i = 0;
-    printf("estoy en el unregister antes de mutex_pub\n");
+    //printf("estoy en el unregister antes de mutex_pub\n");
     pthread_mutex_lock(&mutex_pub);
     for(i = 0; i < MAX_PUBLISHERS; i++) {
         if (publishers[i] != NULL && publishers[i]->id == id) {
             //int id = publishers[i]->id;
-            printf("estoy en el unregister antes de mutex general\n");
+            //printf("estoy en el unregister antes de mutex general\n");
             pthread_mutex_lock(&mutex);
             for (int j = 0; j < MAX_TOPICS; j++) {
 
@@ -583,12 +584,12 @@ int unregister_publisher(int id) {
                 }
                 if (strcmp(publishers[i]->topic, topics[j]) == 0) {
                     publishers_topics[j]--;
-                    printf("publishers_topics[j] %d\n", publishers_topics[j]);
-                    printf("topic %s\n", topics[j]); 
+                    //printf("publishers_topics[j] %d\n", publishers_topics[j]);
+                    //printf("topic %s\n", topics[j]); 
                     break;   
                 }
             }
-            printf("estoy en el unregister despues de mutex general y voy a desbloquearlo\n");
+            //printf("estoy en el unregister despues de mutex general y voy a desbloquearlo\n");
             pthread_mutex_unlock(&mutex);
             //printf ("hemos encontrado el publisher\n");
             
@@ -600,7 +601,7 @@ int unregister_publisher(int id) {
     }
     pthread_mutex_unlock(&mutex_pub);
 
-    printf("No existe el publisher con id %d\n", id);
+    //printf("No existe el publisher con id %d\n", id);
     return -1;
 }
 
@@ -611,13 +612,13 @@ int unregister_subscriber(int id) {
     
     
     //pthread_mutex_lock(&mutex);
-    fprintf(stderr,"-------------------UNREGISTER------------------ \n");
+    //fprintf(stderr,"-------------------UNREGISTER------------------ \n");
     for(i = 0; i < MAX_SUBSCRIBERS; i++) {
         if (subscribers[i] != NULL && subscribers[i]->id == id) {break;}   
     } 
     
     if (i == MAX_SUBSCRIBERS) {//REVISAR
-        printf("No existe el subscriber con id %d\n", id);
+        //printf("No existe el subscriber con id %d\n", id);
         return -1;
     }
     //pthread_mutex_lock(&mutex);
@@ -628,14 +629,14 @@ int unregister_subscriber(int id) {
     }    
     //pthread_mutex_unlock(&mutex);
     if (j == MAX_TOPICS - 1) {
-        printf("No existe el topic %s\n", subscribers[i]->topic);
+        //printf("No existe el topic %s\n", subscribers[i]->topic);
         return -1;
     }
     //printf("j %d\n", j);
     for (k = 0; k < MAX_SUBSCRIBERS; k++) {
         
         if (subscribers_topics[j][k] == NULL) {
-            printf("No existe el subscriber con id %d en el topic %s\n", id, subscribers[i]->topic);
+            //printf("No existe el subscriber con id %d en el topic %s\n", id, subscribers[i]->topic);
             return -1;
         }
         //printf("k %d\n", k);
@@ -649,7 +650,7 @@ int unregister_subscriber(int id) {
     //printf("encontrado sub en topic\n");
                     
     if (k == MAX_SUBSCRIBERS - 1) {
-        printf("No existe el subscriber con id %d en el topic %s\n", id, subscribers[i]->topic);
+        //printf("No existe el subscriber con id %d en el topic %s\n", id, subscribers[i]->topic);
         //return -1;
     }
    
@@ -667,14 +668,14 @@ int unregister_subscriber(int id) {
     }
     for (int x = 0; x < MAX_SUBSCRIBERS; x++) {
         if (subscribers_topics[j][x] != NULL) {
-            fprintf(stderr, "subscribers_topics[j][k]->id %d\n", subscribers_topics[j][x]->id);
+            //fprintf(stderr, "subscribers_topics[j][k]->id %d\n", subscribers_topics[j][x]->id);
 
         }
         else {
             break;
         }
     }
-    fprintf(stderr,"-------------------UNREGISTER---ACABADO----------------- \n");
+    //fprintf(stderr,"-------------------UNREGISTER---ACABADO----------------- \n");
     //pthread_mutex_unlock(&mutex);
    
     //printf("lista actualizada\n");
@@ -685,7 +686,7 @@ void * send_publish(void * arg) {
     send_args * args = (send_args *) arg;
     publish * pub = args->data;
 
-    printf("voy a publicar %s\n", pub->data);
+    //printf("voy a publicar %s\n", pub->data);
     if (broker_mode == FAIR) {
         pthread_barrier_wait(&barrier);
     }
@@ -710,7 +711,7 @@ void refresh_topics() {
             continue;
         }
         if (publishers_topics[i] == 0 && subscribers_topics[i][0] == NULL) {
-            printf("eliminando topic %s\n", topics[i]);
+            //printf("eliminando topic %s\n", topics[i]);
             free(topics[i]);
             topics[i] = NULL;
         }
